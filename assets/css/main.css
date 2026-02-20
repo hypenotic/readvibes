@@ -1,0 +1,40 @@
+/* Readvibes — Global Styles */
+/* Sparse, ceremonial, serious reader tone */
+
+:root {
+  --bg: #08090b;
+  --card-bg: #0e0f14;
+  --border: #1a1e28;
+  --border-light: #252a35;
+  --text-primary: #c8cdd8;
+  --text-secondary: #7a8494;
+  --text-muted: #4a5068;
+  --text-dim: #2a3040;
+  --accent: #9a8a6a;
+  --font-serif: 'Cormorant Garamond', 'Georgia', serif;
+  --font-system: 'Georgia', serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-serif);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(154, 138, 106, 0.2);
+  color: var(--text-primary);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+input, textarea, select, button {
+  font-family: inherit;
+}
