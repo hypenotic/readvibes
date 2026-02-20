@@ -2,15 +2,15 @@
 /* Sparse, ceremonial, serious reader tone */
 
 :root {
-  --bg: #08090b;
+  --bg: #0a0b0e;
   --card-bg: #0e0f14;
-  --border: #1a1e28;
-  --border-light: #252a35;
-  --text-primary: #c8cdd8;
-  --text-secondary: #7a8494;
-  --text-muted: #4a5068;
-  --text-dim: #2a3040;
-  --accent: #9a8a6a;
+  --border: #2a2f3a;
+  --border-light: #3a4050;
+  --text-primary: #e2e5ec;
+  --text-secondary: #a0a8b8;
+  --text-muted: #788098;
+  --text-dim: #4a5268;
+  --accent: #b8a878;
   --font-serif: 'Cormorant Garamond', 'Georgia', serif;
   --font-system: 'Georgia', serif;
 }

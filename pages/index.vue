@@ -307,7 +307,7 @@ async function submitReading() {
 .intro-divider .dot {
   width: 4px; height: 4px;
   border-radius: 50%;
-  background: var(--text-dim);
+  background: var(--text-muted);
 }
 .btn-begin {
   background: none;
@@ -329,7 +329,7 @@ async function submitReading() {
 .intro-note {
   margin-top: 20px;
   font-size: 12px;
-  color: var(--text-dim);
+  color: var(--text-muted);
   letter-spacing: 0.1em;
 }
 
@@ -347,7 +347,7 @@ async function submitReading() {
   font-size: 9px;
   letter-spacing: 0.4em;
   text-transform: uppercase;
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-family: var(--font-system);
 }
 .form-divider {
@@ -376,7 +376,7 @@ async function submitReading() {
 }
 .section-hint {
   font-size: 12px;
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-style: italic;
   margin-bottom: 20px;
 }
@@ -393,7 +393,7 @@ async function submitReading() {
 }
 .book-num {
   font-size: 11px;
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-family: var(--font-system);
   min-width: 16px;
   text-align: right;
@@ -402,7 +402,7 @@ async function submitReading() {
   flex: 1;
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-light);
   padding: 10px 0;
   font-size: 16px;
   color: var(--text-primary);
@@ -411,7 +411,7 @@ async function submitReading() {
   transition: border-color 0.3s ease;
 }
 .book-input::placeholder {
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-style: italic;
   font-size: 14px;
 }
@@ -429,7 +429,7 @@ async function submitReading() {
 .optional-label {
   display: block;
   font-size: 13px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-style: italic;
   margin-bottom: 6px;
 }
@@ -445,7 +445,7 @@ async function submitReading() {
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 13px 18px;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   font-size: 15px;
   font-weight: 300;
   text-align: left;
@@ -493,7 +493,7 @@ async function submitReading() {
 .submit-hint {
   margin-top: 12px;
   font-size: 12px;
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-style: italic;
 }
 
