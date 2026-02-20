@@ -152,7 +152,7 @@ const scale = ref(null)
 
 const bookPlaceholders = [
   'A book that changed how you see things',
-  'One you've read more than once',
+  'One you\'ve read more than once',
   'The one you recommend to people',
   'A book you think about unexpectedly',
   'One that felt written for you'
