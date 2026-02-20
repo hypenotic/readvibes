@@ -113,7 +113,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     await resend.emails.send({
-      from: 'Readvibes <readings@readvibes.com>',
+      from: 'Readvibes <onboarding@resend.dev>',
       to: email,
       subject: `Your Reading${reading.readerName ? `, ${reading.readerName}` : ''}`,
       html,
