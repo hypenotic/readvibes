@@ -65,7 +65,23 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const body = await readBody(event)
 
-  const { books, admiredNotLoved, stoppedReading, tilt, boundary, scale } = body
+  // Validate required fields
+  if (!body || !Array.isArray(body.books) || body.books.filter(b => b && b.trim()).length < 3) {
+    throw createError({ statusCode: 400, statusMessage: 'At least 3 books are required' })
+  }
+  if (!Array.isArray(body.tilt) || body.tilt.length === 0) {
+    throw createError({ statusCode: 400, statusMessage: 'At least one tilt selection is required' })
+  }
+  if (!body.boundary) {
+    throw createError({ statusCode: 400, statusMessage: 'Boundary selection is required' })
+  }
+  if (!body.scale) {
+    throw createError({ statusCode: 400, statusMessage: 'Scale selection is required' })
+  }
+
+  // Sanitize books — filter empty entries
+  const books = body.books.map(b => typeof b === 'string' ? b.trim() : '').filter(Boolean)
+  const { admiredNotLoved, stoppedReading, tilt, boundary, scale } = body
 
   // Build the reader signal for Claude
   const readerSignal = buildReaderSignal(books, admiredNotLoved, stoppedReading, tilt, boundary, scale)
@@ -76,7 +92,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-5-20250514',
+      model: 'claude-sonnet-4-5-20250929',
       max_tokens: 2000,
       messages: [
         {

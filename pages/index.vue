@@ -1,14 +1,14 @@
 <template>
-  <div class="intake">
+  <main class="intake">
     <!-- Stars background -->
     <div class="stars" aria-hidden="true"></div>
 
     <!-- INTRO STATE -->
     <div v-if="step === 'intro'" class="intro">
-      <div class="intro-glyph">◈</div>
+      <div class="intro-glyph" aria-hidden="true">◈</div>
       <h1>Discover Your Reading</h1>
       <p class="intro-sub">Tell us a few books that stayed with you.<br>We'll tell you what they reveal.</p>
-      <div class="intro-divider">
+      <div class="intro-divider" aria-hidden="true">
         <span class="line"></span>
         <span class="dot"></span>
         <span class="line"></span>
@@ -18,10 +18,15 @@
     </div>
 
     <!-- FORM STATE -->
-    <div v-if="step === 'form'" class="form-wrap">
+    <form v-if="step === 'form'" class="form-wrap" @submit.prevent="submitReading">
       <div class="form-header">
         <span class="form-label">Your Reading</span>
         <div class="form-divider"></div>
+      </div>
+
+      <!-- Error message -->
+      <div v-if="error" class="error-message" role="alert">
+        <p>{{ error }}</p>
       </div>
 
       <!-- Section 1: The Constellation -->
@@ -31,11 +36,13 @@
 
         <div class="book-inputs">
           <div v-for="(book, i) in books" :key="i" class="book-row">
-            <span class="book-num">{{ i + 1 }}</span>
+            <span class="book-num" aria-hidden="true">{{ i + 1 }}</span>
             <input
+              :id="'book-' + i"
               v-model="books[i]"
               type="text"
               :placeholder="bookPlaceholders[i]"
+              :aria-label="'Book ' + (i + 1) + ': ' + bookPlaceholders[i]"
               class="book-input"
             />
           </div>
@@ -43,26 +50,41 @@
 
         <div class="optional-group">
           <div class="optional-row">
-            <label class="optional-label">One you admired but didn't love</label>
-            <input v-model="admiredNotLoved" type="text" placeholder="Title" class="book-input" />
+            <label for="admired-not-loved" class="optional-label">One you admired but didn't love</label>
+            <input id="admired-not-loved" v-model="admiredNotLoved" type="text" placeholder="Title" class="book-input" />
           </div>
           <div class="optional-row">
-            <label class="optional-label">One you stopped reading</label>
-            <input v-model="stoppedReading" type="text" placeholder="Title" class="book-input" />
+            <label for="stopped-reading" class="optional-label">One you stopped reading</label>
+            <input id="stopped-reading" v-model="stoppedReading" type="text" placeholder="Title" class="book-input" />
           </div>
         </div>
       </section>
 
-      <!-- Section 2: The Tilt -->
-      <section class="form-section">
-        <h2>The Tilt</h2>
-        <p class="section-desc">When a book works for you, what's doing the work?</p>
-        <p class="section-hint">Choose up to two.</p>
+      <!-- Name (optional) -->
+      <div class="name-field">
+        <label for="reader-name" class="name-label">What should we call you?</label>
+        <input
+          id="reader-name"
+          v-model="readerName"
+          type="text"
+          placeholder="First name (optional)"
+          class="book-input name-input"
+          autocomplete="given-name"
+        />
+      </div>
 
-        <div class="choice-grid">
+      <!-- Section 2: The Tilt -->
+      <section class="form-section" aria-labelledby="tilt-heading">
+        <h2 id="tilt-heading">The Tilt</h2>
+        <p class="section-desc">When a book works for you, what's doing the work?</p>
+        <p id="tilt-hint" class="section-hint">Choose up to two.</p>
+
+        <div class="choice-grid" role="group" aria-labelledby="tilt-heading" aria-describedby="tilt-hint" @keydown="(e) => navigateChoices(e)">
           <button
             v-for="option in tiltOptions"
             :key="option.id"
+            role="checkbox"
+            :aria-checked="tilt.includes(option.id)"
             class="choice-btn"
             :class="{ selected: tilt.includes(option.id) }"
             @click="toggleTilt(option.id)"
@@ -73,15 +95,17 @@
       </section>
 
       <!-- Section 3: The Boundary -->
-      <section class="form-section">
-        <h2>The Boundary</h2>
+      <section class="form-section" aria-labelledby="boundary-heading">
+        <h2 id="boundary-heading">The Boundary</h2>
         <p class="section-desc">Which disappointment bothers you more?</p>
-        <p class="section-hint">Choose one.</p>
+        <p id="boundary-hint" class="section-hint">Choose one.</p>
 
-        <div class="choice-grid">
+        <div class="choice-grid" role="radiogroup" aria-labelledby="boundary-heading" aria-describedby="boundary-hint" @keydown="(e) => navigateChoices(e)">
           <button
             v-for="option in boundaryOptions"
             :key="option.id"
+            role="radio"
+            :aria-checked="boundary === option.id"
             class="choice-btn"
             :class="{ selected: boundary === option.id }"
             @click="boundary = option.id"
@@ -92,15 +116,17 @@
       </section>
 
       <!-- Section 4: The Scale -->
-      <section class="form-section">
-        <h2>The Scale</h2>
+      <section class="form-section" aria-labelledby="scale-heading">
+        <h2 id="scale-heading">The Scale</h2>
         <p class="section-desc">Where do you feel most at home in a story?</p>
-        <p class="section-hint">Choose one.</p>
+        <p id="scale-hint" class="section-hint">Choose one.</p>
 
-        <div class="choice-grid">
+        <div class="choice-grid" role="radiogroup" aria-labelledby="scale-heading" aria-describedby="scale-hint" @keydown="(e) => navigateChoices(e)">
           <button
             v-for="option in scaleOptions"
             :key="option.id"
+            role="radio"
+            :aria-checked="scale === option.id"
             class="choice-btn"
             :class="{ selected: scale === option.id }"
             @click="scale = option.id"
@@ -122,11 +148,11 @@
         </button>
         <p v-if="!canSubmit" class="submit-hint">Add at least three books and one selection from each section.</p>
       </div>
-    </div>
+    </form>
 
     <!-- LOADING STATE -->
-    <div v-if="step === 'loading'" class="loading-state">
-      <div class="loading-glyph">◈</div>
+    <div v-if="step === 'loading'" class="loading-state" role="status" aria-live="polite" aria-busy="true">
+      <div class="loading-glyph" aria-hidden="true">◈</div>
       <p class="loading-text">{{ loadingMessage }}</p>
     </div>
 
@@ -134,15 +160,27 @@
     <div v-if="step === 'reading'" class="reading-wrap">
       <ReadingCard :reading="reading" />
     </div>
-  </div>
+  </main>
 </template>
 
 <script setup>
 const step = ref('intro')
 const loading = ref(false)
 const reading = ref(null)
+const error = ref('')
+
+// Focus management on step transitions
+watch(() => step.value, async (newStep) => {
+  await nextTick()
+  if (newStep === 'form') {
+    document.getElementById('book-0')?.focus()
+  } else if (newStep === 'reading') {
+    document.querySelector('.reading-wrap')?.scrollIntoView({ behavior: 'smooth' })
+  }
+})
 
 // Form state
+const readerName = ref('')
 const books = ref(['', '', '', '', ''])
 const admiredNotLoved = ref('')
 const stoppedReading = ref('')
@@ -189,6 +227,25 @@ function toggleTilt(id) {
   }
 }
 
+// Arrow key navigation within choice groups
+function navigateChoices(e) {
+  const buttons = Array.from(e.currentTarget.querySelectorAll('.choice-btn'))
+  const current = buttons.indexOf(e.target)
+  if (current === -1) return
+
+  let next = -1
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+    next = (current + 1) % buttons.length
+  } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+    next = (current - 1 + buttons.length) % buttons.length
+  }
+
+  if (next !== -1) {
+    e.preventDefault()
+    buttons[next].focus()
+  }
+}
+
 const canSubmit = computed(() => {
   const filledBooks = books.value.filter(b => b.trim()).length
   return filledBooks >= 3 && tilt.value.length > 0 && boundary.value && scale.value
@@ -204,6 +261,7 @@ const loadingMessages = [
 const loadingMessage = ref(loadingMessages[0])
 
 async function submitReading() {
+  error.value = ''
   loading.value = true
   step.value = 'loading'
 
@@ -229,12 +287,14 @@ async function submitReading() {
       body: payload,
     })
 
+    // Attach reader name to the response (display only, not sent to Claude)
+    response.readerName = readerName.value.trim() || null
     reading.value = response
     step.value = 'reading'
   } catch (err) {
     console.error('Failed to generate reading:', err)
+    error.value = 'Something went wrong generating your reading. Please try again.'
     step.value = 'form'
-    alert('Something went wrong generating your reading. Please try again.')
   } finally {
     clearInterval(msgInterval)
     loading.value = false
@@ -344,7 +404,7 @@ async function submitReading() {
   margin-bottom: 48px;
 }
 .form-label {
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.4em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -355,6 +415,22 @@ async function submitReading() {
   height: 1px;
   margin: 16px auto 0;
   background: linear-gradient(90deg, transparent, var(--border-light), transparent);
+}
+
+/* Error message */
+.error-message {
+  border-left: 2px solid var(--accent);
+  padding: 14px 18px;
+  margin-bottom: 32px;
+  background: rgba(184, 168, 120, 0.04);
+  border-radius: 0 4px 4px 0;
+}
+.error-message p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 300;
+  line-height: 1.5;
+  margin: 0;
 }
 
 .form-section {
@@ -434,6 +510,22 @@ async function submitReading() {
   margin-bottom: 6px;
 }
 
+/* Name field */
+.name-field {
+  margin-bottom: 48px;
+  max-width: 280px;
+}
+.name-label {
+  display: block;
+  font-size: 15px;
+  color: var(--text-secondary);
+  font-weight: 300;
+  margin-bottom: 8px;
+}
+.name-input {
+  width: 100%;
+}
+
 /* Choice buttons */
 .choice-grid {
   display: flex;
@@ -487,7 +579,7 @@ async function submitReading() {
   color: var(--text-primary);
 }
 .btn-reveal:disabled {
-  opacity: 0.3;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 .submit-hint {
@@ -524,6 +616,16 @@ async function submitReading() {
   animation: fadeIn 1.2s ease;
 }
 
+/* ---- FOCUS ---- */
+.btn-begin:focus-visible,
+.btn-reveal:focus-visible,
+.choice-btn:focus-visible,
+.book-input:focus-visible,
+.email-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* ---- ANIMATIONS ---- */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(12px); }
@@ -532,5 +634,12 @@ async function submitReading() {
 @keyframes pulse {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 0.6; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 </style>

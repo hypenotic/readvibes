@@ -1,20 +1,20 @@
 <template>
-  <div class="card-wrap" :style="cardVars">
+  <article class="card-wrap" :style="cardVars" aria-label="Your reading result">
     <div class="card-outer">
       <div class="card-inner">
-        <div class="corner tl"></div>
-        <div class="corner tr"></div>
-        <div class="corner bl"></div>
-        <div class="corner br"></div>
+        <div class="corner tl" aria-hidden="true"></div>
+        <div class="corner tr" aria-hidden="true"></div>
+        <div class="corner bl" aria-hidden="true"></div>
+        <div class="corner br" aria-hidden="true"></div>
 
-        <div class="top-label">My Reading</div>
-        <div class="line-divider"></div>
-        <div class="glyph">{{ reading.glyph || '◈' }}</div>
+        <div class="top-label">{{ reading.readerName || 'My Reading' }}</div>
+        <div class="line-divider" aria-hidden="true"></div>
+        <div class="glyph" aria-hidden="true">{{ reading.glyph || '◈' }}</div>
 
         <h1 class="title">{{ reading.title }}</h1>
         <div class="subtitle">{{ reading.subtitle }}</div>
 
-        <div class="rule-divider">
+        <div class="rule-divider" aria-hidden="true">
           <div class="line l"></div>
           <div class="dot"></div>
           <div class="line r"></div>
@@ -28,7 +28,7 @@
           <p>{{ reading.boundary }}</p>
         </div>
 
-        <div class="rule-divider" style="margin-bottom: 20px;">
+        <div class="rule-divider" style="margin-bottom: 20px;" aria-hidden="true">
           <div class="line l"></div>
           <div class="dot"></div>
           <div class="line r"></div>
@@ -41,31 +41,37 @@
 
     <!-- Constellation -->
     <div class="constellation">
-      <div class="constellation-label">The Constellation</div>
-      <div class="constellation-pills">
-        <span v-for="book in reading.constellation" :key="book">{{ book }}</span>
-      </div>
+      <h2 class="constellation-label">The Constellation</h2>
+      <ul class="constellation-pills">
+        <li v-for="book in reading.constellation" :key="book">{{ book }}</li>
+      </ul>
     </div>
 
     <!-- Recommendations toggle -->
     <div class="recs-toggle">
-      <button @click="showRecs = !showRecs">
+      <button
+        @click="showRecs = !showRecs"
+        :aria-expanded="showRecs"
+        aria-controls="recommendations-panel"
+      >
         {{ showRecs ? 'Close' : 'Five Books for Your Field' }}
       </button>
     </div>
 
     <Transition name="recs-reveal">
-      <div v-if="showRecs" class="recs">
-        <div v-for="(rec, i) in reading.recommendations" :key="i" class="rec-item">
-          <div class="rec-header">
-            <span class="rec-num">{{ numerals[i] }}</span>
-            <div>
-              <span class="rec-title">{{ rec.title }}</span>
-              <span class="rec-author">— {{ rec.author }}</span>
+      <div v-if="showRecs" id="recommendations-panel" class="recs">
+        <ol class="recs-list">
+          <li v-for="(rec, i) in reading.recommendations" :key="i" class="rec-item">
+            <div class="rec-header">
+              <span class="rec-num" aria-hidden="true">{{ numerals[i] }}</span>
+              <div>
+                <span class="rec-title">{{ rec.title }}</span>
+                <span class="rec-author">— {{ rec.author }}</span>
+              </div>
             </div>
-          </div>
-          <p class="rec-note">{{ rec.note }}</p>
-        </div>
+            <p class="rec-note">{{ rec.note }}</p>
+          </li>
+        </ol>
 
         <div class="recs-footer">
           <p>{{ reading.recsFooter }}</p>
@@ -74,7 +80,33 @@
     </Transition>
 
     <div class="mark">Readvibes</div>
-  </div>
+
+    <!-- Email Reading -->
+    <div class="email-section">
+      <div v-if="!emailSent" class="email-form">
+        <p class="email-prompt">Keep a copy of your Reading?</p>
+        <div class="email-row">
+          <input
+            v-model="email"
+            type="email"
+            placeholder="your@email.com"
+            class="email-input"
+            aria-label="Email address"
+            @keyup.enter="sendEmail"
+          />
+          <button
+            class="email-btn"
+            :disabled="!email.trim() || emailSending"
+            @click="sendEmail"
+          >
+            {{ emailSending ? 'Sending...' : 'Send' }}
+          </button>
+        </div>
+        <p v-if="emailError" class="email-error">{{ emailError }}</p>
+      </div>
+      <p v-else class="email-sent">Sent. Check your inbox.</p>
+    </div>
+  </article>
 </template>
 
 <script setup>
@@ -87,6 +119,33 @@ const props = defineProps({
 
 const showRecs = ref(false)
 const numerals = ['I', 'II', 'III', 'IV', 'V']
+
+// Email state
+const email = ref('')
+const emailSending = ref(false)
+const emailSent = ref(false)
+const emailError = ref('')
+
+async function sendEmail() {
+  if (!email.value.trim()) return
+  emailSending.value = true
+  emailError.value = ''
+
+  try {
+    await $fetch('/api/send-reading', {
+      method: 'POST',
+      body: {
+        email: email.value.trim(),
+        reading: props.reading,
+      },
+    })
+    emailSent.value = true
+  } catch (err) {
+    emailError.value = 'Couldn\u2019t send. Try again?'
+  } finally {
+    emailSending.value = false
+  }
+}
 
 // Dynamic color theming based on posture temperature
 const cardVars = computed(() => {
@@ -187,7 +246,7 @@ const cardVars = computed(() => {
 
 .top-label {
   text-align: center; margin-bottom: 22px;
-  letter-spacing: 0.35em; font-size: 9px;
+  letter-spacing: 0.35em; font-size: 11px;
   color: var(--card-text-muted); text-transform: uppercase;
   font-family: 'Georgia', serif;
 }
@@ -269,15 +328,18 @@ const cardVars = computed(() => {
 }
 .constellation-label {
   text-align: center; margin-bottom: 18px;
-  font-size: 9px; letter-spacing: 0.35em;
+  font-size: 11px; letter-spacing: 0.35em;
   color: var(--card-text-dim); text-transform: uppercase;
   font-family: 'Georgia', serif;
+  font-weight: 400;
 }
 .constellation-pills {
   display: flex; flex-wrap: wrap;
   justify-content: center; gap: 5px;
+  list-style: none;
+  padding: 0;
 }
-.constellation-pills span {
+.constellation-pills li {
   font-size: 11px; color: var(--card-text-muted);
   padding: 3px 9px;
   border: 1px solid var(--card-border);
@@ -305,6 +367,7 @@ const cardVars = computed(() => {
 }
 
 .recs { margin-top: 28px; padding: 0 4px; }
+.recs-list { list-style: none; padding: 0; margin: 0; }
 .rec-item {
   margin-bottom: 22px;
   padding-bottom: 22px;
@@ -349,9 +412,88 @@ const cardVars = computed(() => {
 
 .mark {
   text-align: center; margin-top: 48px;
-  font-size: 9px; letter-spacing: 0.4em;
+  font-size: 11px; letter-spacing: 0.4em;
   color: var(--card-border); text-transform: uppercase;
   font-family: 'Georgia', serif;
+}
+
+/* Focus */
+.recs-toggle button:focus-visible,
+.email-btn:focus-visible,
+.email-input:focus-visible {
+  outline: 2px solid var(--card-accent);
+  outline-offset: 2px;
+}
+
+/* Email section */
+.email-section {
+  margin-top: 40px;
+  text-align: center;
+}
+.email-prompt {
+  font-size: 13px;
+  color: var(--card-text-muted);
+  margin-bottom: 12px;
+  letter-spacing: 0.05em;
+}
+.email-row {
+  display: flex;
+  gap: 8px;
+  max-width: 320px;
+  margin: 0 auto;
+}
+.email-input {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--card-text);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+.email-input::placeholder {
+  color: var(--card-text-dim);
+  font-style: italic;
+}
+.email-input:focus {
+  border-color: var(--card-text-muted);
+}
+.email-btn {
+  background: none;
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+  padding: 10px 20px;
+  color: var(--card-text-muted);
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-family: 'Georgia', serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+.email-btn:hover:not(:disabled) {
+  border-color: var(--card-text-dim);
+  color: var(--card-text-body);
+}
+.email-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.email-error {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--card-text-muted);
+  font-style: italic;
+}
+.email-sent {
+  font-size: 13px;
+  color: var(--card-text-muted);
+  font-style: italic;
+  letter-spacing: 0.05em;
 }
 
 /* Transition */

@@ -5,6 +5,7 @@ export default defineNuxtConfig({
 
   app: {
     head: {
+      htmlAttrs: { lang: 'en' },
       title: 'Readvibes — Discover Your Reading',
       meta: [
         { charset: 'utf-8' },
@@ -23,5 +24,6 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     anthropicApiKey: process.env.ANTHROPIC_API_KEY || '',
+    resendApiKey: process.env.RESEND_API_KEY || '',
   }
 })
