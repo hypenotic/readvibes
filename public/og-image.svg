@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0e0f14"/>
+      <stop offset="50%" stop-color="#0a0b0e"/>
+      <stop offset="100%" stop-color="#0e0f14"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <!-- Subtle border -->
+  <rect x="40" y="40" width="1120" height="550" rx="8" fill="none" stroke="#2a2f3a" stroke-width="1"/>
+  <!-- Corner marks -->
+  <path d="M56,60 L56,72 M56,60 L68,60" stroke="#3a4050" stroke-width="1" fill="none"/>
+  <path d="M1144,60 L1144,72 M1144,60 L1132,60" stroke="#3a4050" stroke-width="1" fill="none"/>
+  <path d="M56,570 L56,558 M56,570 L68,570" stroke="#3a4050" stroke-width="1" fill="none"/>
+  <path d="M1144,570 L1144,558 M1144,570 L1132,570" stroke="#3a4050" stroke-width="1" fill="none"/>
+  <!-- Glyph -->
+  <text x="600" y="240" text-anchor="middle" font-family="Georgia, serif" font-size="44" fill="#b8a878" opacity="0.4">◈</text>
+  <!-- Title -->
+  <text x="600" y="320" text-anchor="middle" font-family="Georgia, serif" font-size="52" fill="#e2e5ec" letter-spacing="3" font-weight="400">Readvibes</text>
+  <!-- Subtitle -->
+  <text x="600" y="370" text-anchor="middle" font-family="Georgia, serif" font-size="18" fill="#8892a8" letter-spacing="6" text-transform="uppercase">DISCOVER YOUR READING</text>
+  <!-- Divider -->
+  <line x1="550" y1="400" x2="650" y2="400" stroke="#3a4050" stroke-width="1"/>
+  <!-- Tagline -->
+  <text x="600" y="440" text-anchor="middle" font-family="Georgia, serif" font-size="17" fill="#6a7088" font-style="italic">Tell us a few books that stayed with you. We'll tell you what they reveal.</text>
+  <!-- Footer -->
+  <text x="600" y="555" text-anchor="middle" font-family="Georgia, serif" font-size="10" fill="#2a2f3a" letter-spacing="4">READVIBES</text>
+</svg>

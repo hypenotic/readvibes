@@ -141,7 +141,11 @@ async function sendEmail() {
     })
     emailSent.value = true
   } catch (err) {
-    emailError.value = 'Couldn\u2019t send. Try again?'
+    if (err?.statusCode === 429 || err?.status === 429) {
+      emailError.value = 'Too many emails sent recently. Try again later.'
+    } else {
+      emailError.value = 'Couldn\u2019t send. Try again?'
+    }
   } finally {
     emailSending.value = false
   }

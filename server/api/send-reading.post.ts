@@ -1,6 +1,15 @@
 import { Resend } from 'resend'
+import { checkRateLimit } from '../utils/rateLimit'
 
 export default defineEventHandler(async (event) => {
+  // Rate limit: 10 emails per IP per hour
+  const ip = getRequestIP(event, { xForwardedFor: true }) || 'unknown'
+  const { allowed } = checkRateLimit(`email:${ip}`, { maxRequests: 10, windowMs: 60 * 60 * 1000 })
+
+  if (!allowed) {
+    throw createError({ statusCode: 429, statusMessage: 'Too many email requests. Please try again later.' })
+  }
+
   const config = useRuntimeConfig()
   const body = await readBody(event)
 

@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { checkRateLimit } from '../utils/rateLimit'
 
 const GENERATION_PROMPT = `You are the voice engine for Readvibes, a narrative-texture-based book discovery platform. Your job is to generate a "Reading" — a short, evocative profile of how someone reads, what they seek in stories, and what doesn't hold them.
 
@@ -62,6 +63,18 @@ Return valid JSON only. No markdown, no backticks, no preamble. The JSON must ma
 }`
 
 export default defineEventHandler(async (event) => {
+  // Rate limit: 5 readings per IP per hour
+  const ip = getRequestIP(event, { xForwardedFor: true }) || 'unknown'
+  const { allowed, remaining, resetAt } = checkRateLimit(ip, { maxRequests: 5, windowMs: 60 * 60 * 1000 })
+
+  if (!allowed) {
+    const retryAfter = Math.ceil((resetAt - Date.now()) / 1000)
+    setResponseHeader(event, 'Retry-After', String(retryAfter))
+    throw createError({ statusCode: 429, statusMessage: 'Too many readings requested. Please try again later.' })
+  }
+
+  setResponseHeader(event, 'X-RateLimit-Remaining', String(remaining))
+
   const config = useRuntimeConfig()
   const body = await readBody(event)
 

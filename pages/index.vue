@@ -293,7 +293,11 @@ async function submitReading() {
     step.value = 'reading'
   } catch (err) {
     console.error('Failed to generate reading:', err)
-    error.value = 'Something went wrong generating your reading. Please try again.'
+    if (err?.statusCode === 429 || err?.status === 429) {
+      error.value = 'You\u2019ve generated a few readings recently. Please wait a bit before trying again.'
+    } else {
+      error.value = 'Something went wrong generating your reading. Please try again.'
+    }
     step.value = 'form'
   } finally {
     clearInterval(msgInterval)
