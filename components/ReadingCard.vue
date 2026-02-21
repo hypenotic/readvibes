@@ -66,6 +66,11 @@
           <BookList :books="reading.constellation" />
         </div>
 
+        <!-- Signal trace -->
+        <div v-if="reading.signalTrace?.length" class="signal-trace enter-books" :class="{ 'pre-enter': !entered.books }">
+          {{ reading.signalTrace.join(' \u00B7 ') }}
+        </div>
+
         <!-- Mark -->
         <div class="mark enter-mark" :class="{ 'pre-enter': !entered.mark }">
           <span class="mark-line"></span>
@@ -129,7 +134,7 @@
             {{ emailSending ? 'Sending...' : 'Send' }}
           </button>
         </div>
-        <p v-if="emailError" class="email-error">{{ emailError }}</p>
+        <p v-if="emailError" class="email-error" role="alert">{{ emailError }}</p>
       </div>
       <p v-else class="email-sent">Sent. Check your inbox.</p>
     </div>
@@ -236,8 +241,8 @@ async function sendEmail() {
 }
 
 @keyframes breathe {
-  0%, 100% { opacity: 0.028; }
-  50% { opacity: 0.06; }
+  0%, 100% { opacity: 0.05; }
+  50% { opacity: 0.12; }
 }
 
 /* ── Card body ── */
@@ -404,6 +409,17 @@ async function sendEmail() {
   font-style: italic;
   letter-spacing: 0.2em;
   color: var(--gold-dim, #a08040);
+}
+
+/* ── Signal trace ── */
+.signal-trace {
+  text-align: center;
+  font-family: var(--font-label, 'Spectral', 'Georgia', serif);
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  color: var(--cream-ghost, #887868);
+  margin-top: var(--sp-md);
 }
 
 /* ── Recommendations ── */

@@ -87,11 +87,30 @@ onMounted(() => {
   if (prefersReduced) {
     draw(0)
   } else {
+    let isVisible = !document.hidden
+
     function animate(t) {
+      if (!isVisible) {
+        animId = null
+        return
+      }
       draw(t)
       animId = requestAnimationFrame(animate)
     }
     animId = requestAnimationFrame(animate)
+
+    // Pause animation when tab is hidden to save resources
+    const onVisibilityChange = () => {
+      isVisible = !document.hidden
+      if (isVisible && !animId) {
+        animId = requestAnimationFrame(animate)
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+
+    onUnmounted(() => {
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    })
   }
 
   // Debounced resize
