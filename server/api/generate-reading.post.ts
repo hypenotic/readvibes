@@ -85,7 +85,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
 
   // Validate required fields
-  if (!body || !Array.isArray(body.books) || body.books.filter(b => b && b.trim()).length < 3) {
+  if (!body || !Array.isArray(body.books) || body.books.filter(b => b?.title?.trim()).length < 3) {
     throw createError({ statusCode: 400, statusMessage: 'At least 3 books are required' })
   }
   if (!Array.isArray(body.tilt) || body.tilt.length === 0) {
@@ -98,12 +98,18 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Scale selection is required' })
   }
 
-  // Sanitize books — filter empty entries
-  const books = body.books.map(b => typeof b === 'string' ? b.trim() : '').filter(Boolean)
-  const { admiredNotLoved, stoppedReading, tilt, boundary, scale } = body
+  // Sanitize books — filter empty entries and normalize
+  const books = body.books
+    .filter(b => b?.title?.trim())
+    .map(b => ({
+      title: b.title.trim(),
+      immersion: typeof b.immersion === 'number' ? Math.max(0, Math.min(1, b.immersion)) : 0.75,
+      movedOn: Boolean(b.movedOn),
+    }))
+  const { tilt, boundary, scale } = body
 
   // Build the reader signal for Claude
-  const readerSignal = buildReaderSignal(books, admiredNotLoved, stoppedReading, tilt, boundary, scale)
+  const readerSignal = buildReaderSignal(books, tilt, boundary, scale)
 
   const client = new Anthropic({
     apiKey: config.anthropicApiKey,
@@ -129,7 +135,7 @@ export default defineEventHandler(async (event) => {
     const reading = JSON.parse(cleaned)
 
     // Validate the constellation matches their input
-    reading.constellation = books
+    reading.constellation = books.map(b => b.title)
 
     return reading
   } catch (err) {
@@ -141,7 +147,7 @@ export default defineEventHandler(async (event) => {
   }
 })
 
-function buildReaderSignal(books, admiredNotLoved, stoppedReading, tilt, boundary, scale) {
+function buildReaderSignal(books, tilt, boundary, scale) {
   const tiltMap = {
     'world': 'The world feels real enough to live in',
     'character': 'The characters feel psychologically true',
@@ -165,21 +171,25 @@ function buildReaderSignal(books, admiredNotLoved, stoppedReading, tilt, boundar
     'planetary': 'Planetary / civilisational',
   }
 
+  function describeImmersion(val) {
+    if (val >= 0.9) return 'deeply immersed'
+    if (val >= 0.65) return 'strongly immersed'
+    if (val >= 0.4) return 'moderately immersed'
+    return 'lightly immersed'
+  }
+
   let signal = `BOOKS THAT STAYED:\n`
-  books.forEach((b, i) => { signal += `${i + 1}. ${b}\n` })
+  books.forEach((b, i) => {
+    const depth = describeImmersion(b.immersion)
+    const status = b.movedOn ? 'moved on' : 'still active'
+    signal += `${i + 1}. ${b.title} (${depth}, ${status})\n`
+  })
 
-  if (admiredNotLoved) {
-    signal += `\nADMIRED BUT DIDN'T LOVE: ${admiredNotLoved}`
-  }
-  if (stoppedReading) {
-    signal += `\nSTOPPED READING: ${stoppedReading}`
-  }
+  signal += `\nWHAT'S DOING THE WORK (up to 2):\n`
+  tilt.forEach(t => { signal += `- ${tiltMap[t] || t}\n` })
 
-  signal += `\n\nWHAT'S DOING THE WORK (up to 2):\n`
-  tilt.forEach(t => { signal += `- ${tiltMap[t]}\n` })
-
-  signal += `\nWORST DISAPPOINTMENT: ${boundaryMap[boundary]}`
-  signal += `\n\nPREFERRED SCALE: ${scaleMap[scale]}`
+  signal += `\nWORST DISAPPOINTMENT: ${boundaryMap[boundary] || boundary}`
+  signal += `\n\nPREFERRED SCALE: ${scaleMap[scale] || scale}`
 
   return signal
 }

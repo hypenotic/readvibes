@@ -6,23 +6,42 @@
         v-for="(book, i) in books"
         :key="i"
         class="book-row"
-        :class="{ 'is-moved-on': book.relationship === 'MOVED ON' }"
+        :class="{ 'is-moved-on': book.movedOn }"
       >
-        <span class="book-dot" :class="{ 'has-glow': book.relationship === 'LOVED' }"></span>
+        <span
+          class="book-dot"
+          :style="{ opacity: dotOpacity(book), boxShadow: dotGlow(book) }"
+        ></span>
         <span class="book-title">{{ book.title }}</span>
-        <span class="book-relationship">{{ book.relationship }}</span>
+        <span v-if="book.movedOn" class="book-status">moved on</span>
       </li>
     </ul>
   </div>
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
   books: {
     type: Array,
     required: true,
   },
 })
+
+function dotOpacity(book) {
+  if (book.movedOn) return 0.25
+  const immersion = typeof book.immersion === 'number' ? book.immersion : 0.75
+  return 0.4 + immersion * 0.6
+}
+
+function dotGlow(book) {
+  if (book.movedOn) return 'none'
+  const immersion = typeof book.immersion === 'number' ? book.immersion : 0.75
+  if (immersion >= 0.7) {
+    const intensity = (immersion - 0.7) / 0.3
+    return `0 0 ${8 + intensity * 8}px var(--gold, #d0a060), 0 0 ${16 + intensity * 8}px rgba(208, 160, 96, ${0.15 + intensity * 0.2})`
+  }
+  return 'none'
+}
 </script>
 
 <style scoped>
@@ -66,10 +85,6 @@ defineProps({
   flex-shrink: 0;
 }
 
-.book-dot.has-glow {
-  box-shadow: 0 0 8px var(--gold), 0 0 16px rgba(208, 160, 96, 0.3);
-}
-
 .book-title {
   flex: 1;
   font-family: var(--font-serif);
@@ -79,27 +94,18 @@ defineProps({
   color: var(--cream-mid);
 }
 
-.book-relationship {
+.book-status {
   font-family: var(--font-label, 'Spectral', 'Georgia', serif);
   font-size: 10px;
   font-weight: 300;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--cream-dim);
+  color: var(--cream-ghost);
   flex-shrink: 0;
 }
 
 /* Moved on books: dimmer */
-.is-moved-on .book-dot {
-  opacity: 0.25;
-  box-shadow: none;
-}
-
 .is-moved-on .book-title {
   color: var(--cream-dim);
-}
-
-.is-moved-on .book-relationship {
-  color: var(--cream-ghost);
 }
 </style>

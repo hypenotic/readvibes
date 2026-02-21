@@ -35,29 +35,51 @@
         <p class="section-desc">Not the best. The ones that linger. Add at least three.</p>
 
         <div class="book-inputs">
-          <div v-for="(book, i) in books" :key="i" class="book-row">
-            <span class="book-num" aria-hidden="true">{{ i + 1 }}</span>
-            <input
-              :id="'book-' + i"
-              v-model="books[i]"
-              type="text"
-              :placeholder="bookPlaceholders[i]"
-              :aria-label="'Book ' + (i + 1) + ': ' + bookPlaceholders[i]"
-              class="book-input"
-            />
+          <div v-for="(book, i) in books" :key="i" class="book-entry">
+            <div class="book-row">
+              <span class="book-num" aria-hidden="true">{{ i + 1 }}</span>
+              <input
+                :id="'book-' + i"
+                v-model="books[i].title"
+                type="text"
+                :placeholder="getBookPlaceholder(i)"
+                :aria-label="'Book ' + (i + 1) + ': ' + getBookPlaceholder(i)"
+                class="book-input"
+              />
+            </div>
+            <!-- Immersion slider + moved-on flag (shown when title is entered) -->
+            <div v-if="books[i].title.trim()" class="book-meta">
+              <div class="immersion-wrap">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  v-model.number="books[i].immersion"
+                  class="immersion-slider"
+                  :style="{ '--immersion': books[i].immersion / 100 }"
+                  :aria-label="'How deeply ' + books[i].title + ' stayed with you'"
+                />
+                <span class="immersion-hint">still in it</span>
+              </div>
+              <label class="moved-on-toggle">
+                <input
+                  type="checkbox"
+                  v-model="books[i].movedOn"
+                />
+                <span class="moved-on-label">I've moved on from this one</span>
+              </label>
+            </div>
           </div>
         </div>
 
-        <div class="optional-group">
-          <div class="optional-row">
-            <label for="admired-not-loved" class="optional-label">One you admired but didn't love</label>
-            <input id="admired-not-loved" v-model="admiredNotLoved" type="text" placeholder="Title" class="book-input" />
-          </div>
-          <div class="optional-row">
-            <label for="stopped-reading" class="optional-label">One you stopped reading</label>
-            <input id="stopped-reading" v-model="stoppedReading" type="text" placeholder="Title" class="book-input" />
-          </div>
-        </div>
+        <button
+          v-if="books.length < 10"
+          type="button"
+          class="btn-add-book"
+          @click="addBook"
+        >
+          + Add another book
+        </button>
       </section>
 
       <!-- Name (optional) -->
@@ -183,9 +205,8 @@ watch(() => step.value, async (newStep) => {
 
 // Form state
 const readerName = ref('')
-const books = ref(['', '', '', '', ''])
-const admiredNotLoved = ref('')
-const stoppedReading = ref('')
+const makeBook = () => ({ title: '', immersion: 75, movedOn: false })
+const books = ref([makeBook(), makeBook(), makeBook()])
 const tilt = ref([])
 const boundary = ref(null)
 const scale = ref(null)
@@ -195,8 +216,26 @@ const bookPlaceholders = [
   'One you\'ve read more than once',
   'The one you recommend to people',
   'A book you think about unexpectedly',
-  'One that felt written for you'
+  'One that felt written for you',
+  'Another one that stayed',
+  'Another one that stayed',
+  'Another one that stayed',
+  'Another one that stayed',
+  'Another one that stayed',
 ]
+
+function getBookPlaceholder(i) {
+  return bookPlaceholders[i] || 'Another one that stayed'
+}
+
+function addBook() {
+  if (books.value.length < 10) {
+    books.value.push(makeBook())
+    nextTick(() => {
+      document.getElementById('book-' + (books.value.length - 1))?.focus()
+    })
+  }
+}
 
 const tiltOptions = [
   { id: 'world', text: 'The world feels real enough to live in' },
@@ -249,7 +288,7 @@ function navigateChoices(e) {
 }
 
 const canSubmit = computed(() => {
-  const filledBooks = books.value.filter(b => b.trim()).length
+  const filledBooks = books.value.filter(b => b.title.trim()).length
   return filledBooks >= 3 && tilt.value.length > 0 && boundary.value && scale.value
 })
 
@@ -275,10 +314,16 @@ async function submitReading() {
   }, 2800)
 
   try {
+    const filledBooks = books.value
+      .filter(b => b.title.trim())
+      .map(b => ({
+        title: b.title.trim(),
+        immersion: b.immersion / 100,
+        movedOn: b.movedOn,
+      }))
+
     const payload = {
-      books: books.value.filter(b => b.trim()),
-      admiredNotLoved: admiredNotLoved.value.trim() || null,
-      stoppedReading: stoppedReading.value.trim() || null,
+      books: filledBooks,
       tilt: tilt.value,
       boundary: boundary.value,
       scale: scale.value,
@@ -292,19 +337,13 @@ async function submitReading() {
     // Attach reader name to the response (display only, not sent to Claude)
     response.readerName = readerName.value.trim() || null
 
-    // Enrich constellation with relationship data for the card display
-    const enrichedConstellation = books.value
-      .filter(b => b.trim())
-      .map(title => ({ title: title.trim(), relationship: 'LOVED' }))
+    // Enrich constellation with immersion data for the card display
+    response.constellation = filledBooks.map(b => ({
+      title: b.title,
+      immersion: b.immersion,
+      movedOn: b.movedOn,
+    }))
 
-    if (admiredNotLoved.value.trim()) {
-      enrichedConstellation.push({ title: admiredNotLoved.value.trim(), relationship: 'LIKED' })
-    }
-    if (stoppedReading.value.trim()) {
-      enrichedConstellation.push({ title: stoppedReading.value.trim(), relationship: 'MOVED ON' })
-    }
-
-    response.constellation = enrichedConstellation
     reading.value = response
     step.value = 'reading'
   } catch (err) {
@@ -471,13 +510,15 @@ async function submitReading() {
 
 /* Book inputs */
 .book-inputs {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
+}
+.book-entry {
+  margin-bottom: 6px;
 }
 .book-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 10px;
 }
 .book-num {
   font-size: 11px;
@@ -507,19 +548,124 @@ async function submitReading() {
   border-color: var(--accent);
 }
 
-.optional-group {
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
+/* Book immersion meta */
+.book-meta {
+  padding: 8px 0 12px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
-.optional-row {
-  margin-bottom: 14px;
+
+.immersion-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
-.optional-label {
-  display: block;
-  font-size: 13px;
-  color: var(--text-secondary);
+
+.immersion-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 120px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    var(--accent) 0%,
+    var(--accent) calc(var(--immersion) * 100%),
+    var(--border) calc(var(--immersion) * 100%),
+    var(--border) 100%
+  );
+  outline: none;
+  cursor: pointer;
+}
+
+.immersion-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.immersion-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.3);
+}
+
+.immersion-slider::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  cursor: pointer;
+}
+
+.immersion-hint {
+  font-size: 11px;
+  color: var(--text-muted);
   font-style: italic;
-  margin-bottom: 6px;
+  opacity: 0.6;
+}
+
+.moved-on-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.moved-on-toggle input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--border-light);
+  border-radius: 2px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.moved-on-toggle input[type="checkbox"]:checked {
+  border-color: var(--accent);
+  background: rgba(184, 168, 120, 0.15);
+}
+
+.moved-on-toggle input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--accent);
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
+
+.moved-on-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Add book button */
+.btn-add-book {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-style: italic;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-bottom: 20px;
+  transition: color 0.2s ease;
+}
+.btn-add-book:hover {
+  color: var(--text-secondary);
 }
 
 /* Name field */
@@ -630,8 +776,10 @@ async function submitReading() {
 /* ---- FOCUS ---- */
 .btn-begin:focus-visible,
 .btn-reveal:focus-visible,
+.btn-add-book:focus-visible,
 .choice-btn:focus-visible,
 .book-input:focus-visible,
+.immersion-slider:focus-visible,
 .email-input:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
