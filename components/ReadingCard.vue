@@ -27,14 +27,19 @@
         <!-- Posture name (subtitle from API) -->
         <div class="posture-name enter-posture" :class="{ 'pre-enter': !entered.posture }">{{ reading.subtitle }}</div>
 
+        <!-- Posture definition -->
+        <div v-if="reading.postureDefinition" class="posture-definition enter-posture" :class="{ 'pre-enter': !entered.posture }">
+          {{ reading.postureDefinition }}
+        </div>
+
         <!-- Field Signature — HERO -->
         <div class="field-signature enter-signature" :class="{ 'pre-enter': !entered.signature }">
           {{ reading.fieldSignature }}
         </div>
 
-        <!-- Reader name + date -->
+        <!-- Reader name + temporal marker -->
         <div class="reader-info enter-name" :class="{ 'pre-enter': !entered.name }">
-          {{ displayName }}<span v-if="displayName"> &middot; </span>{{ formattedDate }}
+          {{ displayName }}<span v-if="displayName && temporalMarker"> &middot; </span>{{ temporalMarker }}
         </div>
 
         <!-- Ornamental divider (Phase 2) -->
@@ -161,9 +166,9 @@ const numerals = ['I', 'II', 'III', 'IV', 'V']
 // Display name
 const displayName = computed(() => props.reading.readerName || '')
 
-// Formatted date
-const formattedDate = computed(() => {
-  return new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase()
+// Temporal marker (arcane coordinate from API, fallback to formatted date)
+const temporalMarker = computed(() => {
+  return props.reading.temporalMarker || new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase()
 })
 
 // Email state
@@ -275,7 +280,18 @@ async function sendEmail() {
   font-style: italic;
   letter-spacing: 0.05em;
   color: var(--gold, #d0a060);
+  margin-bottom: var(--sp-xs);
+}
+
+.posture-definition {
+  text-align: center;
+  font-family: var(--font-serif, 'Cormorant Garamond', 'Georgia', serif);
+  font-size: 15px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--cream-dim, #a89878);
   margin-bottom: var(--sp-lg);
+  line-height: 1.6;
 }
 
 /* ── Field Signature — HERO ── */
