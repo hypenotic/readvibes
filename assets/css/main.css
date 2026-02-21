@@ -8,7 +8,7 @@
   --border-light: #3a4050;
   --text-primary: #e2e5ec;
   --text-secondary: #a0a8b8;
-  --text-muted: #8892a8;
+  --text-muted: #9ea6b8;
   --text-dim: #6a7088;
   --accent: #b8a878;
 
@@ -51,4 +51,17 @@ a {
 
 input, textarea, select, button {
   font-family: inherit;
+}
+
+/* Screen reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

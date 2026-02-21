@@ -17,197 +17,254 @@
       <p class="intro-note">Takes about two minutes. No account needed.</p>
     </div>
 
-    <!-- FORM STATE -->
-    <form v-if="step === 'form'" class="form-wrap" @submit.prevent="submitReading">
+    <!-- FORM STATE (step-by-step) -->
+    <div v-if="step === 'form'" class="form-wrap">
       <div class="form-header">
         <span class="form-label">Your Reading</span>
         <div class="form-divider"></div>
       </div>
 
       <!-- Error message -->
-      <div v-if="error" class="error-message" role="alert">
+      <div v-if="error" class="error-message" role="alert" tabindex="-1" ref="errorRef">
         <p>{{ error }}</p>
       </div>
 
-      <!-- Section 1: The Constellation -->
-      <section class="form-section">
-        <h2>Books that have stayed with you</h2>
-        <p class="section-desc">Not the best. The ones that linger. Add at least three.</p>
-
-        <div class="book-inputs">
-          <div v-for="(book, i) in books" :key="i" class="book-entry">
-            <div class="book-row">
-              <span class="book-num" aria-hidden="true">{{ i + 1 }}</span>
-              <input
-                :id="'book-' + i"
-                v-model="books[i].title"
-                type="text"
-                :placeholder="getBookPlaceholder(i)"
-                :aria-label="'Book ' + (i + 1) + ': ' + getBookPlaceholder(i)"
-                class="book-input"
-              />
-            </div>
-            <!-- Immersion slider + moved-on flag (shown when title is entered) -->
-            <div v-if="books[i].title.trim()" class="book-meta">
-              <div class="immersion-wrap">
-                <span class="immersion-anchor anchor-low">background noise</span>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  v-model.number="books[i].immersion"
-                  class="immersion-slider"
-                  :style="{ '--immersion': books[i].immersion / 100 }"
-                  :aria-label="'How deeply ' + books[i].title + ' stayed with you — from background noise to soul-piercing'"
-                />
-                <span class="immersion-anchor anchor-high">soul-piercing</span>
-              </div>
-              <label class="moved-on-toggle">
-                <input
-                  type="checkbox"
-                  v-model="books[i].movedOn"
-                />
-                <span class="moved-on-label">I've moved on from this one</span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <button
-          v-if="books.length < 10"
-          type="button"
-          class="btn-add-book"
-          @click="addBook"
-        >
-          + Add another book
-        </button>
-      </section>
-
-      <!-- Name (optional) -->
-      <div class="name-field">
-        <label for="reader-name" class="name-label">What should we call you?</label>
-        <input
-          id="reader-name"
-          v-model="readerName"
-          type="text"
-          placeholder="First name (optional)"
-          class="book-input name-input"
-          autocomplete="given-name"
-        />
+      <!-- Step counter -->
+      <div class="step-counter" aria-live="polite" aria-atomic="true">
+        {{ formStep + 1 }} of {{ formSteps.length }}
       </div>
 
-      <!-- Section 2: The Tilt -->
-      <section class="form-section" aria-labelledby="tilt-heading">
-        <h2 id="tilt-heading">What pulls you into a book</h2>
-        <p class="section-desc">When a book works for you, what's really doing the work?</p>
-        <p id="tilt-hint" class="section-hint">Choose up to two.</p>
+      <!-- Step transitions -->
+      <Transition :name="transitionName" mode="out-in">
 
-        <div class="choice-grid" role="group" aria-labelledby="tilt-heading" aria-describedby="tilt-hint" @keydown="(e) => navigateChoices(e)">
-          <div v-for="option in tiltOptions" :key="option.id" class="choice-wrap">
-            <button
-              role="checkbox"
-              :aria-checked="tilt.includes(option.id)"
-              class="choice-btn"
-              :class="{ selected: tilt.includes(option.id) }"
-              @click="toggleTilt(option.id)"
-            >
-              <span class="choice-text">{{ option.text }}</span>
-              <span class="tip-toggle" @click.stop="toggleTip(option.id)" aria-label="More info">?</span>
-            </button>
-            <div v-if="expandedTip === option.id" class="choice-tip">{{ option.tip }}</div>
+        <!-- Step 0: Books -->
+        <section v-if="formStep === 0" key="books" class="form-section" aria-labelledby="books-heading">
+          <h2 id="books-heading">Books that have stayed with you</h2>
+          <p class="section-desc">Not the best. The ones that linger. Add at least three.</p>
+
+          <div class="book-inputs">
+            <div v-for="(book, i) in books" :key="i" class="book-entry">
+              <div class="book-row">
+                <span class="book-num" aria-hidden="true">{{ i + 1 }}</span>
+                <input
+                  :id="'book-' + i"
+                  v-model="books[i].title"
+                  type="text"
+                  :placeholder="getBookPlaceholder(i)"
+                  :aria-label="'Book ' + (i + 1) + ': ' + getBookPlaceholder(i)"
+                  class="book-input"
+                  @keydown.enter.prevent="handleBookEnter(i)"
+                />
+              </div>
+              <!-- Immersion slider + moved-on flag (shown when title is entered) -->
+              <div v-if="books[i].title.trim()" class="book-meta">
+                <div class="immersion-wrap">
+                  <span class="immersion-anchor anchor-low">background noise</span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    v-model.number="books[i].immersion"
+                    class="immersion-slider"
+                    :style="{ '--immersion': books[i].immersion / 100 }"
+                    :aria-label="'How deeply ' + books[i].title + ' stayed with you — from background noise to soul-piercing'"
+                  />
+                  <span class="immersion-anchor anchor-high">soul-piercing</span>
+                </div>
+                <label class="moved-on-toggle">
+                  <input
+                    type="checkbox"
+                    v-model="books[i].movedOn"
+                  />
+                  <span class="moved-on-label">I've moved on from this one</span>
+                </label>
+              </div>
+            </div>
           </div>
-          <div class="choice-wrap">
+
+          <button
+            v-if="books.length < 10"
+            type="button"
+            class="btn-add-book"
+            @click="addBook"
+          >
+            + Add another book
+          </button>
+        </section>
+
+        <!-- Step 1: Name -->
+        <section v-else-if="formStep === 1" key="name" class="form-section" aria-labelledby="name-heading">
+          <h2 id="name-heading">What should we call you?</h2>
+          <p class="section-desc">First name is enough. Or skip it entirely.</p>
+
+          <div class="name-field-step">
             <input
-              v-model="tiltCustom"
+              id="reader-name"
+              v-model="readerName"
               type="text"
-              maxlength="200"
-              placeholder="Something else \u2014 tell us in your own words"
-              class="choice-custom-input"
-              @focus="tilt.length < 2 && !tilt.includes('custom') ? tilt = [...tilt, 'custom'] : null"
+              placeholder="First name (optional)"
+              class="book-input name-input"
+              autocomplete="given-name"
+              aria-label="First name (optional)"
+              @keydown.enter.prevent="advanceStep"
             />
           </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- Section 3: The Boundary -->
-      <section class="form-section" aria-labelledby="boundary-heading">
-        <h2 id="boundary-heading">What tends to push you out</h2>
-        <p class="section-desc">Which disappointment sticks with you?</p>
-        <p id="boundary-hint" class="section-hint">Choose one.</p>
+        <!-- Step 2: Tilt -->
+        <section v-else-if="formStep === 2" key="tilt" class="form-section" aria-labelledby="tilt-heading">
+          <h2 id="tilt-heading">What pulls you into a book</h2>
+          <p class="section-desc">When a book works for you, what's really doing the work?</p>
+          <p id="tilt-hint" class="section-hint">Choose up to two.</p>
 
-        <div class="choice-grid" role="radiogroup" aria-labelledby="boundary-heading" aria-describedby="boundary-hint" @keydown="(e) => navigateChoices(e)">
-          <div v-for="option in boundaryOptions" :key="option.id" class="choice-wrap">
-            <button
-              role="radio"
-              :aria-checked="boundary === option.id"
-              class="choice-btn"
-              :class="{ selected: boundary === option.id }"
-              @click="boundary = option.id"
-            >
-              <span class="choice-text">{{ option.text }}</span>
-              <span class="tip-toggle" @click.stop="toggleTip(option.id)" aria-label="More info">?</span>
-            </button>
-            <div v-if="expandedTip === option.id" class="choice-tip">{{ option.tip }}</div>
+          <div class="choice-grid" role="group" aria-labelledby="tilt-heading" aria-describedby="tilt-hint" @keydown="(e) => navigateChoices(e)">
+            <div v-for="option in tiltOptions" :key="option.id" class="choice-wrap">
+              <button
+                type="button"
+                role="checkbox"
+                :aria-checked="tilt.includes(option.id)"
+                class="choice-btn"
+                :class="{ selected: tilt.includes(option.id) }"
+                @click="toggleTilt(option.id)"
+              >
+                <span class="choice-text">{{ option.text }}</span>
+                <span class="tip-toggle" @click.stop="toggleTip(option.id)" aria-label="More info" role="button">?</span>
+              </button>
+              <div v-if="expandedTip === option.id" class="choice-tip" role="note">{{ option.tip }}</div>
+            </div>
+            <div class="choice-wrap">
+              <input
+                v-model="tiltCustom"
+                type="text"
+                maxlength="200"
+                placeholder="Something else — tell us in your own words"
+                class="choice-custom-input"
+                aria-label="Something else that pulls you into a book"
+                @focus="tilt.length < 2 && !tilt.includes('custom') ? tilt = [...tilt, 'custom'] : null"
+              />
+            </div>
           </div>
-          <div class="choice-wrap">
-            <input
-              v-model="boundaryCustom"
-              type="text"
-              maxlength="200"
-              placeholder="Something else \u2014 tell us in your own words"
-              class="choice-custom-input"
-              @focus="boundary = 'custom'"
-            />
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- Section 4: The Scale -->
-      <section class="form-section" aria-labelledby="scale-heading">
-        <h2 id="scale-heading">What scale feels like home</h2>
-        <p class="section-desc">Where do you feel most at home in a story?</p>
-        <p id="scale-hint" class="section-hint">Choose one.</p>
+        <!-- Step 3: Boundary -->
+        <section v-else-if="formStep === 3" key="boundary" class="form-section" aria-labelledby="boundary-heading">
+          <h2 id="boundary-heading">What tends to push you out</h2>
+          <p class="section-desc">Which disappointment sticks with you?</p>
+          <p id="boundary-hint" class="section-hint">Choose one.</p>
 
-        <div class="choice-grid" role="radiogroup" aria-labelledby="scale-heading" aria-describedby="scale-hint" @keydown="(e) => navigateChoices(e)">
-          <div v-for="option in scaleOptions" :key="option.id" class="choice-wrap">
-            <button
-              role="radio"
-              :aria-checked="scale === option.id"
-              class="choice-btn"
-              :class="{ selected: scale === option.id }"
-              @click="scale = option.id"
-            >
-              <span class="choice-text">{{ option.text }}</span>
-              <span class="tip-toggle" @click.stop="toggleTip(option.id)" aria-label="More info">?</span>
-            </button>
-            <div v-if="expandedTip === option.id" class="choice-tip">{{ option.tip }}</div>
+          <div class="choice-grid" role="radiogroup" aria-labelledby="boundary-heading" aria-describedby="boundary-hint" @keydown="(e) => navigateChoices(e)">
+            <div v-for="option in boundaryOptions" :key="option.id" class="choice-wrap">
+              <button
+                type="button"
+                role="radio"
+                :aria-checked="boundary === option.id"
+                class="choice-btn"
+                :class="{ selected: boundary === option.id }"
+                @click="boundary = option.id"
+              >
+                <span class="choice-text">{{ option.text }}</span>
+                <span class="tip-toggle" @click.stop="toggleTip(option.id)" aria-label="More info" role="button">?</span>
+              </button>
+              <div v-if="expandedTip === option.id" class="choice-tip" role="note">{{ option.tip }}</div>
+            </div>
+            <div class="choice-wrap">
+              <input
+                v-model="boundaryCustom"
+                type="text"
+                maxlength="200"
+                placeholder="Something else — tell us in your own words"
+                class="choice-custom-input"
+                aria-label="Something else that pushes you out of a book"
+                @focus="boundary = 'custom'"
+              />
+            </div>
           </div>
-          <div class="choice-wrap">
-            <input
-              v-model="scaleCustom"
-              type="text"
-              maxlength="200"
-              placeholder="Something else \u2014 tell us in your own words"
-              class="choice-custom-input"
-              @focus="scale = 'custom'"
-            />
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- Submit -->
-      <div class="form-submit">
-        <div class="form-divider"></div>
+        <!-- Step 4: Scale -->
+        <section v-else-if="formStep === 4" key="scale" class="form-section" aria-labelledby="scale-heading">
+          <h2 id="scale-heading">What scale feels like home</h2>
+          <p class="section-desc">Where do you feel most at home in a story?</p>
+          <p id="scale-hint" class="section-hint">Choose one.</p>
+
+          <div class="choice-grid" role="radiogroup" aria-labelledby="scale-heading" aria-describedby="scale-hint" @keydown="(e) => navigateChoices(e)">
+            <div v-for="option in scaleOptions" :key="option.id" class="choice-wrap">
+              <button
+                type="button"
+                role="radio"
+                :aria-checked="scale === option.id"
+                class="choice-btn"
+                :class="{ selected: scale === option.id }"
+                @click="scale = option.id"
+              >
+                <span class="choice-text">{{ option.text }}</span>
+                <span class="tip-toggle" @click.stop="toggleTip(option.id)" aria-label="More info" role="button">?</span>
+              </button>
+              <div v-if="expandedTip === option.id" class="choice-tip" role="note">{{ option.tip }}</div>
+            </div>
+            <div class="choice-wrap">
+              <input
+                v-model="scaleCustom"
+                type="text"
+                maxlength="200"
+                placeholder="Something else — tell us in your own words"
+                class="choice-custom-input"
+                aria-label="A different scale that feels like home"
+                @focus="scale = 'custom'"
+              />
+            </div>
+          </div>
+        </section>
+      </Transition>
+
+      <!-- Navigation -->
+      <div class="form-nav">
         <button
+          v-if="formStep > 0"
+          type="button"
+          class="btn-back"
+          @click="goBack"
+        >
+          Back
+        </button>
+        <span v-else></span>
+
+        <button
+          v-if="formStep < formSteps.length - 1"
+          type="button"
+          class="btn-continue"
+          :disabled="!canAdvance"
+          @click="advanceStep"
+        >
+          Continue
+        </button>
+        <button
+          v-else
+          type="button"
           class="btn-reveal"
           :disabled="!canSubmit || loading"
           @click="submitReading"
         >
           {{ loading ? 'Casting your reading...' : 'Cast' }}
         </button>
-        <p v-if="!canSubmit" class="submit-hint">At least three books, and one choice from each section.</p>
       </div>
-    </form>
+
+      <!-- Validation hint -->
+      <div aria-live="polite" class="validation-live">
+        <p v-if="formStep === 0 && filledBookCount < 3" class="step-hint">
+          {{ filledBookCount === 0 ? 'Add at least three books to continue.' : `${filledBookCount} of 3 minimum books entered.` }}
+        </p>
+        <p v-if="formStep === 2 && tilt.length === 0" class="step-hint">
+          Choose at least one.
+        </p>
+        <p v-if="formStep === 3 && !boundary" class="step-hint">
+          Choose one.
+        </p>
+        <p v-if="formStep === 4 && !scale" class="step-hint">
+          Choose one to cast your reading.
+        </p>
+      </div>
+    </div>
 
     <!-- LOADING STATE -->
     <div v-if="step === 'loading'" class="loading-state" role="status" aria-live="polite" aria-busy="true">
@@ -229,16 +286,44 @@ const step = ref('intro')
 const loading = ref(false)
 const reading = ref(null)
 const error = ref('')
+const errorRef = ref(null)
 
-// Focus management on step transitions
+// Step-by-step form
+const formSteps = ['books', 'name', 'tilt', 'boundary', 'scale']
+const formStep = ref(0)
+const transitionDir = ref('forward') // 'forward' or 'back'
+
+const transitionName = computed(() => transitionDir.value === 'forward' ? 'step-forward' : 'step-back')
+
+// Focus management on main step transitions
 watch(() => step.value, async (newStep) => {
   await nextTick()
   if (newStep === 'form') {
-    document.getElementById('book-0')?.focus()
+    focusFirstInput()
   } else if (newStep === 'reading') {
     document.querySelector('.reading-wrap')?.scrollIntoView({ behavior: 'smooth' })
   }
 })
+
+// Focus management on form step transitions
+watch(() => formStep.value, async () => {
+  await nextTick()
+  focusFirstInput()
+  // Close any open tooltip when changing steps
+  expandedTip.value = null
+})
+
+// Clear error when user interacts with form
+watch([() => books.value.map(b => b.title).join(','), tilt, boundary, scale], () => {
+  if (error.value) error.value = ''
+})
+
+function focusFirstInput() {
+  const wrap = document.querySelector('.form-section')
+  if (!wrap) return
+  const focusable = wrap.querySelector('input, button:not(.btn-add-book):not(.tip-toggle)')
+  focusable?.focus()
+}
 
 // Form state
 const readerName = ref('')
@@ -271,6 +356,17 @@ function addBook() {
     nextTick(() => {
       document.getElementById('book-' + (books.value.length - 1))?.focus()
     })
+  }
+}
+
+function handleBookEnter(i) {
+  // If this book has a title and next book exists, focus it
+  if (books.value[i].title.trim() && i < books.value.length - 1) {
+    document.getElementById('book-' + (i + 1))?.focus()
+  } else if (books.value[i].title.trim() && books.value.length < 10) {
+    addBook()
+  } else if (canAdvance.value) {
+    advanceStep()
   }
 }
 
@@ -335,10 +431,37 @@ function navigateChoices(e) {
   }
 }
 
-const canSubmit = computed(() => {
-  const filledBooks = books.value.filter(b => b.title.trim()).length
-  return filledBooks >= 3 && tilt.value.length > 0 && boundary.value && scale.value
+// Per-step validation
+const filledBookCount = computed(() => books.value.filter(b => b.title.trim()).length)
+
+const canAdvance = computed(() => {
+  switch (formStep.value) {
+    case 0: return filledBookCount.value >= 3
+    case 1: return true // name is optional
+    case 2: return tilt.value.length > 0
+    case 3: return !!boundary.value
+    case 4: return !!scale.value
+    default: return false
+  }
 })
+
+const canSubmit = computed(() => {
+  return filledBookCount.value >= 3 && tilt.value.length > 0 && boundary.value && scale.value
+})
+
+function advanceStep() {
+  if (canAdvance.value && formStep.value < formSteps.length - 1) {
+    transitionDir.value = 'forward'
+    formStep.value++
+  }
+}
+
+function goBack() {
+  if (formStep.value > 0) {
+    transitionDir.value = 'back'
+    formStep.value--
+  }
+}
 
 // Loading messages cycle
 const loadingMessages = [
@@ -405,6 +528,9 @@ async function submitReading() {
       error.value = 'Something went wrong generating your reading. Please try again.'
     }
     step.value = 'form'
+    // Focus the error message
+    await nextTick()
+    errorRef.value?.focus()
   } finally {
     clearInterval(msgInterval)
     loading.value = false
@@ -421,8 +547,6 @@ async function submitReading() {
   padding: 60px 20px 100px;
   position: relative;
 }
-
-/* Starfield canvas is rendered as a component */
 
 /* ---- INTRO ---- */
 .intro {
@@ -490,7 +614,7 @@ async function submitReading() {
 }
 .intro-note {
   margin-top: 20px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-muted);
   letter-spacing: 0.1em;
 }
@@ -503,7 +627,7 @@ async function submitReading() {
 }
 .form-header {
   text-align: center;
-  margin-bottom: 48px;
+  margin-bottom: 32px;
 }
 .form-label {
   font-size: 11px;
@@ -519,13 +643,27 @@ async function submitReading() {
   background: linear-gradient(90deg, transparent, var(--border-light), transparent);
 }
 
+/* Step counter */
+.step-counter {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 24px;
+  letter-spacing: 0.05em;
+}
+
 /* Error message */
 .error-message {
   border-left: 2px solid var(--accent);
   padding: 14px 18px;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   background: rgba(184, 168, 120, 0.04);
   border-radius: 0 4px 4px 0;
+}
+.error-message:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 .error-message p {
   font-size: 14px;
@@ -536,7 +674,7 @@ async function submitReading() {
 }
 
 .form-section {
-  margin-bottom: 48px;
+  min-height: 200px;
 }
 .form-section h2 {
   font-size: 22px;
@@ -553,7 +691,7 @@ async function submitReading() {
   margin-bottom: 6px;
 }
 .section-hint {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-muted);
   font-style: italic;
   margin-bottom: 20px;
@@ -657,12 +795,11 @@ async function submitReading() {
   font-size: 10px;
   color: var(--text-muted);
   font-style: italic;
-  opacity: 0.5;
   white-space: nowrap;
   flex-shrink: 0;
 }
-.anchor-low { opacity: 0.4; }
-.anchor-high { opacity: 0.6; }
+.anchor-low { opacity: 0.55; }
+.anchor-high { opacity: 0.7; }
 
 .moved-on-toggle {
   display: flex;
@@ -702,7 +839,7 @@ async function submitReading() {
 }
 
 .moved-on-label {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-muted);
   font-style: italic;
 }
@@ -715,7 +852,7 @@ async function submitReading() {
   font-size: 13px;
   font-style: italic;
   cursor: pointer;
-  padding: 8px 0;
+  padding: 12px 0;
   margin-bottom: 20px;
   transition: color 0.2s ease;
 }
@@ -723,17 +860,10 @@ async function submitReading() {
   color: var(--text-secondary);
 }
 
-/* Name field */
-.name-field {
-  margin-bottom: 48px;
-  max-width: 280px;
-}
-.name-label {
-  display: block;
-  font-size: 15px;
-  color: var(--text-secondary);
-  font-weight: 300;
-  margin-bottom: 8px;
+/* Name field (step view) */
+.name-field-step {
+  max-width: 320px;
+  margin-top: 16px;
 }
 .name-input {
   width: 100%;
@@ -782,6 +912,13 @@ async function submitReading() {
   opacity: 0.5;
   transition: opacity 0.2s ease;
   cursor: pointer;
+  /* Enlarge touch target without changing visual size */
+  position: relative;
+}
+.tip-toggle::after {
+  content: '';
+  position: absolute;
+  inset: -13px;
 }
 .tip-toggle:hover {
   opacity: 0.8;
@@ -792,7 +929,7 @@ async function submitReading() {
   color: var(--text-secondary);
   font-style: italic;
   font-weight: 300;
-  line-height: 1.55;
+  line-height: 1.65;
   animation: fadeIn 0.25s ease;
 }
 .choice-btn:hover {
@@ -827,16 +964,57 @@ async function submitReading() {
   border-color: var(--accent);
 }
 
-/* Submit */
-.form-submit {
-  text-align: center;
-  padding-top: 20px;
+/* ---- FORM NAV ---- */
+.form-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
 }
+
+.btn-back {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-style: italic;
+  cursor: pointer;
+  padding: 10px 16px;
+  transition: color 0.2s ease;
+}
+.btn-back:hover {
+  color: var(--text-secondary);
+}
+
+.btn-continue {
+  background: none;
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  padding: 12px 36px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-family: var(--font-system);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.btn-continue:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+.btn-continue:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .btn-reveal {
   background: none;
   border: 1px solid var(--border-light);
   border-radius: 4px;
-  padding: 16px 48px;
+  padding: 14px 44px;
   color: var(--text-secondary);
   font-size: 14px;
   letter-spacing: 0.18em;
@@ -844,7 +1022,6 @@ async function submitReading() {
   font-family: var(--font-system);
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 24px;
 }
 .btn-reveal:hover:not(:disabled) {
   border-color: var(--accent);
@@ -854,11 +1031,48 @@ async function submitReading() {
   opacity: 0.45;
   cursor: not-allowed;
 }
-.submit-hint {
+
+/* Validation hint */
+.validation-live {
+  text-align: center;
+  min-height: 24px;
   margin-top: 12px;
-  font-size: 12px;
+}
+.step-hint {
+  font-size: 13px;
   color: var(--text-muted);
   font-style: italic;
+}
+
+/* ---- STEP TRANSITIONS ---- */
+.step-forward-enter-active {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.step-forward-leave-active {
+  transition: all 0.2s ease;
+}
+.step-forward-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+.step-forward-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.step-back-enter-active {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.step-back-leave-active {
+  transition: all 0.2s ease;
+}
+.step-back-enter-from {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+.step-back-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
 }
 
 /* ---- LOADING ---- */
@@ -890,11 +1104,21 @@ async function submitReading() {
 /* ---- FOCUS ---- */
 .btn-begin:focus-visible,
 .btn-reveal:focus-visible,
+.btn-continue:focus-visible,
+.btn-back:focus-visible,
 .btn-add-book:focus-visible,
 .choice-btn:focus-visible,
 .book-input:focus-visible,
-.immersion-slider:focus-visible,
-.email-input:focus-visible {
+.email-input:focus-visible,
+.choice-custom-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.immersion-slider:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+.moved-on-toggle input[type="checkbox"]:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
@@ -913,6 +1137,12 @@ async function submitReading() {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+  .step-forward-enter-active,
+  .step-forward-leave-active,
+  .step-back-enter-active,
+  .step-back-leave-active {
+    transition: none !important;
   }
 }
 </style>
