@@ -50,6 +50,7 @@
             <!-- Immersion slider + moved-on flag (shown when title is entered) -->
             <div v-if="books[i].title.trim()" class="book-meta">
               <div class="immersion-wrap">
+                <span class="immersion-anchor anchor-low">background noise</span>
                 <input
                   type="range"
                   min="0"
@@ -57,9 +58,9 @@
                   v-model.number="books[i].immersion"
                   class="immersion-slider"
                   :style="{ '--immersion': books[i].immersion / 100 }"
-                  :aria-label="'How deeply ' + books[i].title + ' stayed with you'"
+                  :aria-label="'How deeply ' + books[i].title + ' stayed with you — from background noise to soul-piercing'"
                 />
-                <span class="immersion-hint">still in it</span>
+                <span class="immersion-anchor anchor-high">soul-piercing</span>
               </div>
               <label class="moved-on-toggle">
                 <input
@@ -119,6 +120,7 @@
             <input
               v-model="tiltCustom"
               type="text"
+              maxlength="200"
               placeholder="Something else \u2014 tell us in your own words"
               class="choice-custom-input"
               @focus="tilt.length < 2 && !tilt.includes('custom') ? tilt = [...tilt, 'custom'] : null"
@@ -151,6 +153,7 @@
             <input
               v-model="boundaryCustom"
               type="text"
+              maxlength="200"
               placeholder="Something else \u2014 tell us in your own words"
               class="choice-custom-input"
               @focus="boundary = 'custom'"
@@ -183,6 +186,7 @@
             <input
               v-model="scaleCustom"
               type="text"
+              maxlength="200"
               placeholder="Something else \u2014 tell us in your own words"
               class="choice-custom-input"
               @focus="scale = 'custom'"
@@ -649,12 +653,16 @@ async function submitReading() {
   cursor: pointer;
 }
 
-.immersion-hint {
-  font-size: 11px;
+.immersion-anchor {
+  font-size: 10px;
   color: var(--text-muted);
   font-style: italic;
-  opacity: 0.6;
+  opacity: 0.5;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
+.anchor-low { opacity: 0.4; }
+.anchor-high { opacity: 0.6; }
 
 .moved-on-toggle {
   display: flex;

@@ -40,6 +40,28 @@ GLYPH:
 - earthen: "◈"
 - neutral: "◈"
 
+VOICE EXAMPLE (calibration — study the tone, not the content):
+
+Input constellation: The Remains of the Day, Tinker Tailor Soldier Spy, Pachinko, Station Eleven, The Sympathizer
+Tilt: structure, character | Boundary: obvious-themes | Scale: systems
+
+Example output fields (for voice calibration only — never copy these verbatim):
+
+  fieldSignature: "The system before the feeling."
+  subtitle: "The Peripheral Architect"
+  postureDefinition: "You watch the structure before you feel the story."
+  temporalMarker: "Meridian 7 · Archive Strata IV"
+  temperature: "cool"
+
+  paragraphs:
+  [1] "The books in this constellation share a specific gravity: institutions that press on the people inside them. The pressure is the point. You read for the moment when a character navigates a system they didn't build and can't fully see — and the navigation itself becomes the emotional event."
+  [2] "The pleasure is procedural. Not efficiency, but the weight of competence applied under constraint. A butler calibrating silence. An intelligence officer mapping betrayal through the quality of someone's handshake. The story earns your trust by showing its work."
+  [3] "Resolution, for you, is not catharsis. It is the moment the pattern becomes visible — when the architecture of what was happening all along clicks into place, and the feeling arrives late, carried by structure rather than announced by the prose."
+
+  boundary: "What tends not to hold you — the book that tells you what to think about it. When the theme is in the title and the metaphor explains itself, the machinery goes slack. You need to find the meaning; having it delivered feels like a lesser book."
+
+Notice: present tense, no genre labels, no flattery, no hedging, precise language, the constellation's books are described by what they DO not what shelf they sit on, the boundary describes an experience. Match this register.
+
 OUTPUT FORMAT:
 Return valid JSON only. No markdown, no backticks, no preamble. The JSON must match this exact structure:
 
@@ -88,28 +110,41 @@ export default defineEventHandler(async (event) => {
   if (!body || !Array.isArray(body.books) || body.books.filter(b => b?.title?.trim()).length < 3) {
     throw createError({ statusCode: 400, statusMessage: 'At least 3 books are required' })
   }
-  if (!Array.isArray(body.tilt) || body.tilt.length === 0) {
-    throw createError({ statusCode: 400, statusMessage: 'At least one tilt selection is required' })
+  if (!Array.isArray(body.tilt) || body.tilt.length === 0 || body.tilt.length > 2) {
+    throw createError({ statusCode: 400, statusMessage: 'One or two tilt selections are required' })
   }
-  if (!body.boundary) {
+  if (typeof body.boundary !== 'string' || !body.boundary) {
     throw createError({ statusCode: 400, statusMessage: 'Boundary selection is required' })
   }
-  if (!body.scale) {
+  if (typeof body.scale !== 'string' || !body.scale) {
     throw createError({ statusCode: 400, statusMessage: 'Scale selection is required' })
+  }
+
+  // Sanitize free text: cap length, strip control chars, collapse whitespace
+  function sanitizeText(val: unknown, maxLen = 200): string | null {
+    if (typeof val !== 'string') return null
+    const cleaned = val
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // strip control chars
+      .replace(/\s+/g, ' ')                                 // collapse whitespace
+      .trim()
+      .slice(0, maxLen)
+    return cleaned || null
   }
 
   // Sanitize books — filter empty entries and normalize
   const books = body.books
     .filter(b => b?.title?.trim())
+    .slice(0, 10) // enforce max 10 books
     .map(b => ({
-      title: b.title.trim(),
+      title: sanitizeText(b.title, 150) || '',
       immersion: typeof b.immersion === 'number' ? Math.max(0, Math.min(1, b.immersion)) : 0.75,
       movedOn: Boolean(b.movedOn),
     }))
+    .filter(b => b.title) // drop any that cleaned to empty
   const { tilt, boundary, scale } = body
-  const tiltCustom = typeof body.tiltCustom === 'string' ? body.tiltCustom.trim() : null
-  const boundaryCustom = typeof body.boundaryCustom === 'string' ? body.boundaryCustom.trim() : null
-  const scaleCustom = typeof body.scaleCustom === 'string' ? body.scaleCustom.trim() : null
+  const tiltCustom = sanitizeText(body.tiltCustom)
+  const boundaryCustom = sanitizeText(body.boundaryCustom)
+  const scaleCustom = sanitizeText(body.scaleCustom)
 
   // Build the reader signal for Claude
   const readerSignal = buildReaderSignal(books, tilt, boundary, scale, { tiltCustom, boundaryCustom, scaleCustom })
