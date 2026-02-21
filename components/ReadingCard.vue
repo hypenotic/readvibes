@@ -265,7 +265,7 @@ async function sendEmail() {
   text-align: center;
   font-family: var(--font-label, 'Spectral', 'Georgia', serif);
   font-size: 10px;
-  font-weight: 300;
+  font-weight: 200;
   letter-spacing: 0.5em;
   text-transform: uppercase;
   color: var(--cream-ghost, #887868);
@@ -274,7 +274,7 @@ async function sendEmail() {
 
 .posture-name {
   text-align: center;
-  font-family: var(--font-serif, 'Cormorant Garamond', 'Georgia', serif);
+  font-family: var(--font-serif, 'Cormorant', 'Cormorant Garamond', 'Georgia', serif);
   font-size: 20px;
   font-weight: 400;
   font-style: italic;
@@ -285,7 +285,7 @@ async function sendEmail() {
 
 .posture-definition {
   text-align: center;
-  font-family: var(--font-serif, 'Cormorant Garamond', 'Georgia', serif);
+  font-family: var(--font-serif, 'Cormorant', 'Cormorant Garamond', 'Georgia', serif);
   font-size: 15px;
   font-weight: 300;
   font-style: italic;
@@ -297,7 +297,7 @@ async function sendEmail() {
 /* ── Field Signature — HERO ── */
 .field-signature {
   text-align: center;
-  font-family: var(--font-serif, 'Cormorant Garamond', 'Georgia', serif);
+  font-family: var(--font-serif, 'Cormorant', 'Cormorant Garamond', 'Georgia', serif);
   font-size: 48px;
   font-weight: 300;
   font-style: italic;
@@ -313,7 +313,7 @@ async function sendEmail() {
   text-align: center;
   font-family: var(--font-label, 'Spectral', 'Georgia', serif);
   font-size: 11px;
-  font-weight: 300;
+  font-weight: 200;
   letter-spacing: 0.3em;
   text-transform: uppercase;
   color: var(--cream-dim, #a89878);
@@ -329,7 +329,7 @@ async function sendEmail() {
 
 /* ── Reading text ── */
 .reading-text {
-  font-family: var(--font-serif, 'Cormorant Garamond', 'Georgia', serif);
+  font-family: var(--font-serif, 'Cormorant', 'Cormorant Garamond', 'Georgia', serif);
   font-size: 20px;
   font-weight: 300;
   line-height: 2.0;
@@ -359,7 +359,7 @@ async function sendEmail() {
 }
 
 .boundary-label {
-  font-family: var(--font-serif, 'Cormorant Garamond', 'Georgia', serif);
+  font-family: var(--font-serif, 'Cormorant', 'Cormorant Garamond', 'Georgia', serif);
   font-size: 13px;
   font-weight: 500;
   font-style: italic;
@@ -369,7 +369,7 @@ async function sendEmail() {
 }
 
 .boundary p {
-  font-family: var(--font-serif, 'Cormorant Garamond', 'Georgia', serif);
+  font-family: var(--font-serif, 'Cormorant', 'Cormorant Garamond', 'Georgia', serif);
   font-size: 18px;
   font-weight: 300;
   font-style: italic;
@@ -398,7 +398,7 @@ async function sendEmail() {
 }
 
 .mark-text {
-  font-family: var(--font-serif, 'Cormorant Garamond', 'Georgia', serif);
+  font-family: var(--font-serif, 'Cormorant', 'Cormorant Garamond', 'Georgia', serif);
   font-size: 12px;
   font-weight: 400;
   font-style: italic;

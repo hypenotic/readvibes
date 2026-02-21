@@ -11,7 +11,20 @@
   --text-muted: #8892a8;
   --text-dim: #6a7088;
   --accent: #b8a878;
-  --font-serif: 'Cormorant Garamond', 'Georgia', serif;
+
+  /* Card palette (warm default) */
+  --gold-glow: #e8c888;
+  --gold: #d0a060;
+  --gold-dim: #a08040;
+  --gold-dark: #6a5428;
+  --gold-ink: #3a2a14;
+  --cream-mid: #d8c8a8;
+  --cream-dim: #a89878;
+  --cream-bnd: #c8b898;
+  --cream-ghost: #887868;
+
+  /* Fonts */
+  --font-serif: 'Cormorant', 'Cormorant Garamond', 'Georgia', serif;
   --font-label: 'Spectral', 'Georgia', serif;
   --font-system: 'Georgia', serif;
 }
