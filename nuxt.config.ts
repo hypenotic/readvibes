@@ -6,23 +6,23 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'en' },
-      title: 'Read Fortunes — Discover Your Reading',
+      title: 'Read Fortunes',
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'description', content: 'Tell us a few books that stayed with you. We\'ll tell you what they reveal.' },
+        { name: 'description', content: 'Tell us a few books that stayed with you. We\'ll map what draws you in.' },
         // Open Graph
         { property: 'og:type', content: 'website' },
-        { property: 'og:title', content: 'Read Fortunes — Discover Your Reading' },
-        { property: 'og:description', content: 'Tell us a few books that stayed with you. We\'ll tell you what they reveal.' },
+        { property: 'og:title', content: 'Read Fortunes' },
+        { property: 'og:description', content: 'Tell us a few books that stayed with you. We\'ll map what draws you in.' },
         { property: 'og:image', content: '/og-image.svg' },
         { property: 'og:image:width', content: '1200' },
         { property: 'og:image:height', content: '630' },
         { property: 'og:site_name', content: 'Read Fortunes' },
         // Twitter Card
         { name: 'twitter:card', content: 'summary_large_image' },
-        { name: 'twitter:title', content: 'Read Fortunes — Discover Your Reading' },
-        { name: 'twitter:description', content: 'Tell us a few books that stayed with you. We\'ll tell you what they reveal.' },
+        { name: 'twitter:title', content: 'Read Fortunes' },
+        { name: 'twitter:description', content: 'Tell us a few books that stayed with you. We\'ll map what draws you in.' },
         { name: 'twitter:image', content: '/og-image.svg' },
         // Theme
         { name: 'theme-color', content: '#060504' },

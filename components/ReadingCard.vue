@@ -22,7 +22,7 @@
         </div>
 
         <!-- Posture label -->
-        <div class="posture-label enter-posture" :class="{ 'pre-enter': !entered.posture }">YOUR READING POSTURE</div>
+        <div class="posture-label enter-posture" :class="{ 'pre-enter': !entered.posture }">Your reading posture</div>
 
         <!-- Posture name (subtitle from API) -->
         <div class="posture-name enter-posture" :class="{ 'pre-enter': !entered.posture }">{{ reading.subtitle }}</div>
@@ -78,7 +78,7 @@
         :aria-expanded="showRecs"
         aria-controls="recommendations-panel"
       >
-        {{ showRecs ? 'Close' : 'Five Books for Your Field' }}
+        {{ showRecs ? 'Close' : 'Books that might find you' }}
       </button>
     </div>
 

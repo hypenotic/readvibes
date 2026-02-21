@@ -6,14 +6,14 @@
     <!-- INTRO STATE -->
     <div v-if="step === 'intro'" class="intro">
       <div class="intro-glyph" aria-hidden="true">◈</div>
-      <h1>Discover Your Reading</h1>
-      <p class="intro-sub">Tell us a few books that stayed with you.<br>We'll tell you what they reveal.</p>
+      <h1>Take a Reading</h1>
+      <p class="intro-sub">A few books and a few questions.<br>We'll tell you what draws you in.</p>
       <div class="intro-divider" aria-hidden="true">
         <span class="line"></span>
         <span class="dot"></span>
         <span class="line"></span>
       </div>
-      <button class="btn-begin" @click="step = 'form'">Begin</button>
+      <button class="btn-begin" @click="step = 'form'">Take a Reading</button>
       <p class="intro-note">Takes about two minutes. No account needed.</p>
     </div>
 
@@ -31,8 +31,8 @@
 
       <!-- Section 1: The Constellation -->
       <section class="form-section">
-        <h2>The Constellation</h2>
-        <p class="section-desc">Five books that stayed with you. Not the "best." The ones that linger.</p>
+        <h2>Books that have stayed with you</h2>
+        <p class="section-desc">Not the best. The ones that linger. Add at least three.</p>
 
         <div class="book-inputs">
           <div v-for="(book, i) in books" :key="i" class="book-row">
@@ -75,8 +75,8 @@
 
       <!-- Section 2: The Tilt -->
       <section class="form-section" aria-labelledby="tilt-heading">
-        <h2 id="tilt-heading">The Tilt</h2>
-        <p class="section-desc">When a book works for you, what's doing the work?</p>
+        <h2 id="tilt-heading">What pulls you into a book</h2>
+        <p class="section-desc">When a book works for you, what's really doing the work?</p>
         <p id="tilt-hint" class="section-hint">Choose up to two.</p>
 
         <div class="choice-grid" role="group" aria-labelledby="tilt-heading" aria-describedby="tilt-hint" @keydown="(e) => navigateChoices(e)">
@@ -96,8 +96,8 @@
 
       <!-- Section 3: The Boundary -->
       <section class="form-section" aria-labelledby="boundary-heading">
-        <h2 id="boundary-heading">The Boundary</h2>
-        <p class="section-desc">Which disappointment bothers you more?</p>
+        <h2 id="boundary-heading">What tends to push you out</h2>
+        <p class="section-desc">Which disappointment sticks with you?</p>
         <p id="boundary-hint" class="section-hint">Choose one.</p>
 
         <div class="choice-grid" role="radiogroup" aria-labelledby="boundary-heading" aria-describedby="boundary-hint" @keydown="(e) => navigateChoices(e)">
@@ -117,7 +117,7 @@
 
       <!-- Section 4: The Scale -->
       <section class="form-section" aria-labelledby="scale-heading">
-        <h2 id="scale-heading">The Scale</h2>
+        <h2 id="scale-heading">What scale feels like home</h2>
         <p class="section-desc">Where do you feel most at home in a story?</p>
         <p id="scale-hint" class="section-hint">Choose one.</p>
 
@@ -144,9 +144,9 @@
           :disabled="!canSubmit || loading"
           @click="submitReading"
         >
-          {{ loading ? 'Reading the field...' : 'Reveal My Reading' }}
+          {{ loading ? 'Casting your reading...' : 'Cast' }}
         </button>
-        <p v-if="!canSubmit" class="submit-hint">Add at least three books and one selection from each section.</p>
+        <p v-if="!canSubmit" class="submit-hint">At least three books, and one choice from each section.</p>
       </div>
     </form>
 
@@ -255,8 +255,8 @@ const canSubmit = computed(() => {
 
 // Loading messages cycle
 const loadingMessages = [
-  'Reading the constellation...',
-  'Tracing the through-lines...',
+  'Casting your reading...',
+  'Tracing the constellation...',
   'Finding the posture...',
   'Writing your reading...',
 ]
