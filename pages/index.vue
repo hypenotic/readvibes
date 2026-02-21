@@ -1,7 +1,7 @@
 <template>
   <main class="intake">
-    <!-- Stars background -->
-    <div class="stars" aria-hidden="true"></div>
+    <!-- Starfield background -->
+    <StarfieldCanvas :temperature="reading?.temperature || 'warm'" />
 
     <!-- INTRO STATE -->
     <div v-if="step === 'intro'" class="intro">
@@ -164,6 +164,8 @@
 </template>
 
 <script setup>
+import StarfieldCanvas from '~/components/reading/StarfieldCanvas.vue'
+
 const step = ref('intro')
 const loading = ref(false)
 const reading = ref(null)
@@ -289,6 +291,20 @@ async function submitReading() {
 
     // Attach reader name to the response (display only, not sent to Claude)
     response.readerName = readerName.value.trim() || null
+
+    // Enrich constellation with relationship data for the card display
+    const enrichedConstellation = books.value
+      .filter(b => b.trim())
+      .map(title => ({ title: title.trim(), relationship: 'LOVED' }))
+
+    if (admiredNotLoved.value.trim()) {
+      enrichedConstellation.push({ title: admiredNotLoved.value.trim(), relationship: 'LIKED' })
+    }
+    if (stoppedReading.value.trim()) {
+      enrichedConstellation.push({ title: stoppedReading.value.trim(), relationship: 'MOVED ON' })
+    }
+
+    response.constellation = enrichedConstellation
     reading.value = response
     step.value = 'reading'
   } catch (err) {
@@ -316,15 +332,7 @@ async function submitReading() {
   position: relative;
 }
 
-.stars {
-  position: fixed; inset: 0; z-index: 0; opacity: 0.025;
-  background-image:
-    radial-gradient(circle at 30% 20%, #8a8a8a 0.5px, transparent 0.5px),
-    radial-gradient(circle at 65% 55%, #8a8a8a 0.3px, transparent 0.3px),
-    radial-gradient(circle at 45% 85%, #8a8a8a 0.6px, transparent 0.6px);
-  background-size: 140px 140px, 90px 90px, 220px 220px;
-  pointer-events: none;
-}
+/* Starfield canvas is rendered as a component */
 
 /* ---- INTRO ---- */
 .intro {
@@ -616,8 +624,7 @@ async function submitReading() {
 /* ---- READING ---- */
 .reading-wrap {
   width: 100%;
-  max-width: 440px;
-  animation: fadeIn 1.2s ease;
+  max-width: 660px;
 }
 
 /* ---- FOCUS ---- */

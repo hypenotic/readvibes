@@ -28,7 +28,10 @@ export default defineEventHandler(async (event) => {
 
   const readerName = reading.readerName || 'My Reading'
   const paragraphs = (reading.paragraphs || []).map((p: string) => `<p style="margin: 0 0 14px; line-height: 1.8;">${p}</p>`).join('')
-  const constellation = (reading.constellation || []).map((b: string) => `<span style="display: inline-block; font-size: 12px; color: #788098; padding: 3px 10px; border: 1px solid #2a2f3a; border-radius: 14px; font-style: italic; margin: 2px;">${b}</span>`).join(' ')
+  const constellation = (reading.constellation || []).map((b: any) => {
+    const title = typeof b === 'string' ? b : b?.title || ''
+    return `<span style="display: inline-block; font-size: 12px; color: #788098; padding: 3px 10px; border: 1px solid #2a2f3a; border-radius: 14px; font-style: italic; margin: 2px;">${title}</span>`
+  }).join(' ')
 
   const recs = (reading.recommendations || []).map((rec: { title: string; author: string; note: string }, i: number) => {
     const numerals = ['I', 'II', 'III', 'IV', 'V']

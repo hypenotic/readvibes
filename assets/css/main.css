@@ -2,8 +2,8 @@
 /* Sparse, ceremonial, serious reader tone */
 
 :root {
-  --bg: #0a0b0e;
-  --card-bg: #0e0f14;
+  --bg: #060504;
+  --card-bg: #0d0b08;
   --border: #2a2f3a;
   --border-light: #3a4050;
   --text-primary: #e2e5ec;
@@ -12,6 +12,7 @@
   --text-dim: #6a7088;
   --accent: #b8a878;
   --font-serif: 'Cormorant Garamond', 'Georgia', serif;
+  --font-label: 'Spectral', 'Georgia', serif;
   --font-system: 'Georgia', serif;
 }
 
