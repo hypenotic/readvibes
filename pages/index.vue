@@ -102,17 +102,28 @@
         <p id="tilt-hint" class="section-hint">Choose up to two.</p>
 
         <div class="choice-grid" role="group" aria-labelledby="tilt-heading" aria-describedby="tilt-hint" @keydown="(e) => navigateChoices(e)">
-          <button
-            v-for="option in tiltOptions"
-            :key="option.id"
-            role="checkbox"
-            :aria-checked="tilt.includes(option.id)"
-            class="choice-btn"
-            :class="{ selected: tilt.includes(option.id) }"
-            @click="toggleTilt(option.id)"
-          >
-            {{ option.text }}
-          </button>
+          <div v-for="option in tiltOptions" :key="option.id" class="choice-wrap">
+            <button
+              role="checkbox"
+              :aria-checked="tilt.includes(option.id)"
+              class="choice-btn"
+              :class="{ selected: tilt.includes(option.id) }"
+              @click="toggleTilt(option.id)"
+            >
+              <span class="choice-text">{{ option.text }}</span>
+              <span class="tip-toggle" @click.stop="toggleTip(option.id)" aria-label="More info">?</span>
+            </button>
+            <div v-if="expandedTip === option.id" class="choice-tip">{{ option.tip }}</div>
+          </div>
+          <div class="choice-wrap">
+            <input
+              v-model="tiltCustom"
+              type="text"
+              placeholder="Something else \u2014 tell us in your own words"
+              class="choice-custom-input"
+              @focus="tilt.length < 2 && !tilt.includes('custom') ? tilt = [...tilt, 'custom'] : null"
+            />
+          </div>
         </div>
       </section>
 
@@ -123,17 +134,28 @@
         <p id="boundary-hint" class="section-hint">Choose one.</p>
 
         <div class="choice-grid" role="radiogroup" aria-labelledby="boundary-heading" aria-describedby="boundary-hint" @keydown="(e) => navigateChoices(e)">
-          <button
-            v-for="option in boundaryOptions"
-            :key="option.id"
-            role="radio"
-            :aria-checked="boundary === option.id"
-            class="choice-btn"
-            :class="{ selected: boundary === option.id }"
-            @click="boundary = option.id"
-          >
-            {{ option.text }}
-          </button>
+          <div v-for="option in boundaryOptions" :key="option.id" class="choice-wrap">
+            <button
+              role="radio"
+              :aria-checked="boundary === option.id"
+              class="choice-btn"
+              :class="{ selected: boundary === option.id }"
+              @click="boundary = option.id"
+            >
+              <span class="choice-text">{{ option.text }}</span>
+              <span class="tip-toggle" @click.stop="toggleTip(option.id)" aria-label="More info">?</span>
+            </button>
+            <div v-if="expandedTip === option.id" class="choice-tip">{{ option.tip }}</div>
+          </div>
+          <div class="choice-wrap">
+            <input
+              v-model="boundaryCustom"
+              type="text"
+              placeholder="Something else \u2014 tell us in your own words"
+              class="choice-custom-input"
+              @focus="boundary = 'custom'"
+            />
+          </div>
         </div>
       </section>
 
@@ -144,17 +166,28 @@
         <p id="scale-hint" class="section-hint">Choose one.</p>
 
         <div class="choice-grid" role="radiogroup" aria-labelledby="scale-heading" aria-describedby="scale-hint" @keydown="(e) => navigateChoices(e)">
-          <button
-            v-for="option in scaleOptions"
-            :key="option.id"
-            role="radio"
-            :aria-checked="scale === option.id"
-            class="choice-btn"
-            :class="{ selected: scale === option.id }"
-            @click="scale = option.id"
-          >
-            {{ option.text }}
-          </button>
+          <div v-for="option in scaleOptions" :key="option.id" class="choice-wrap">
+            <button
+              role="radio"
+              :aria-checked="scale === option.id"
+              class="choice-btn"
+              :class="{ selected: scale === option.id }"
+              @click="scale = option.id"
+            >
+              <span class="choice-text">{{ option.text }}</span>
+              <span class="tip-toggle" @click.stop="toggleTip(option.id)" aria-label="More info">?</span>
+            </button>
+            <div v-if="expandedTip === option.id" class="choice-tip">{{ option.tip }}</div>
+          </div>
+          <div class="choice-wrap">
+            <input
+              v-model="scaleCustom"
+              type="text"
+              placeholder="Something else \u2014 tell us in your own words"
+              class="choice-custom-input"
+              @focus="scale = 'custom'"
+            />
+          </div>
         </div>
       </section>
 
@@ -238,27 +271,38 @@ function addBook() {
 }
 
 const tiltOptions = [
-  { id: 'world', text: 'The world feels real enough to live in' },
-  { id: 'character', text: 'The characters feel psychologically true' },
-  { id: 'structure', text: 'The structure is tight and purposeful' },
-  { id: 'prose', text: 'The prose is precise or striking' },
-  { id: 'momentum', text: 'The story moves — I need momentum' },
+  { id: 'world', text: 'The world feels real enough to live in', tip: 'You notice the weather, the architecture, the way light falls. The world isn\u2019t backdrop \u2014 it\u2019s a character.' },
+  { id: 'character', text: 'The characters feel psychologically true', tip: 'You\u2019re tracking interior logic. When a character acts, you need to believe they would.' },
+  { id: 'structure', text: 'The structure is tight and purposeful', tip: 'You notice when scenes earn their place. Pacing, reveals, the shape of the whole thing matters to you.' },
+  { id: 'prose', text: 'The prose is precise or striking', tip: 'The sentence-level craft is where the book lives for you. Voice, rhythm, word choice.' },
+  { id: 'momentum', text: 'The story moves \u2014 I need momentum', tip: 'You need to feel pulled forward. Doesn\u2019t have to be fast \u2014 but it has to be going somewhere.' },
 ]
 
 const boundaryOptions = [
-  { id: 'beautiful-nothing', text: 'Beautifully written but nothing really happened' },
-  { id: 'fast-unearned', text: 'It moved fast but didn\'t feel earned' },
-  { id: 'obvious-themes', text: 'It made its themes obvious' },
-  { id: 'emotionally-flat', text: 'It felt emotionally flat' },
-  { id: 'ending-failed', text: 'The ending didn\'t land' },
+  { id: 'beautiful-nothing', text: 'Beautifully written but nothing really happened', tip: 'Gorgeous prose that never arrives anywhere. Style without stakes.' },
+  { id: 'fast-unearned', text: 'It moved fast but didn\u2019t feel earned', tip: 'Things happened, but the consequences felt hollow. Speed without weight.' },
+  { id: 'obvious-themes', text: 'It made its themes obvious', tip: 'You could feel the author underlining. The meaning was announced, not discovered.' },
+  { id: 'emotionally-flat', text: 'It felt emotionally flat', tip: 'Technically fine but you didn\u2019t feel anything. Competent but cold.' },
+  { id: 'ending-failed', text: 'The ending didn\u2019t land', tip: 'Everything was working until it wasn\u2019t. The landing matters to you.' },
 ]
 
 const scaleOptions = [
-  { id: 'intimate', text: 'Intimate and interior' },
-  { id: 'human', text: 'Mid-scale human stakes' },
-  { id: 'systems', text: 'Large systems / big worlds' },
-  { id: 'planetary', text: 'Planetary / civilisational' },
+  { id: 'intimate', text: 'Intimate and interior', tip: 'One mind, one room, one relationship. The drama is internal.' },
+  { id: 'human', text: 'Mid-scale human stakes', tip: 'Families, communities, a life unfolding. Stakes you can hold in your hands.' },
+  { id: 'systems', text: 'Large systems / big worlds', tip: 'Institutions, cities, interconnected fates. You like seeing the machinery.' },
+  { id: 'planetary', text: 'Planetary / civilisational', tip: 'History-scale. The sweep of time, the fate of peoples. You read wide.' },
 ]
+
+// Tooltip expand state
+const expandedTip = ref(null)
+function toggleTip(id) {
+  expandedTip.value = expandedTip.value === id ? null : id
+}
+
+// "Something else" free-text state
+const tiltCustom = ref('')
+const boundaryCustom = ref('')
+const scaleCustom = ref('')
 
 function toggleTilt(id) {
   if (tilt.value.includes(id)) {
@@ -325,8 +369,11 @@ async function submitReading() {
     const payload = {
       books: filledBooks,
       tilt: tilt.value,
+      tiltCustom: tiltCustom.value.trim() || null,
       boundary: boundary.value,
+      boundaryCustom: boundaryCustom.value.trim() || null,
       scale: scale.value,
+      scaleCustom: scaleCustom.value.trim() || null,
     }
 
     const response = await $fetch('/api/generate-reading', {
@@ -690,7 +737,11 @@ async function submitReading() {
   flex-direction: column;
   gap: 8px;
 }
+.choice-wrap {
+  /* wrapper for button + tooltip */
+}
 .choice-btn {
+  width: 100%;
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -702,6 +753,39 @@ async function submitReading() {
   cursor: pointer;
   transition: all 0.25s ease;
   line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.choice-text {
+  flex: 1;
+}
+.tip-toggle {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--border-light);
+  color: var(--text-muted);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+  cursor: pointer;
+}
+.tip-toggle:hover {
+  opacity: 0.8;
+}
+.choice-tip {
+  padding: 8px 18px 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1.55;
+  animation: fadeIn 0.25s ease;
 }
 .choice-btn:hover {
   border-color: var(--border-light);
@@ -711,6 +795,28 @@ async function submitReading() {
   border-color: var(--accent);
   color: var(--text-primary);
   background: rgba(154, 138, 106, 0.06);
+}
+
+/* Custom "something else" input */
+.choice-custom-input {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 13px 18px;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 300;
+  outline: none;
+  transition: border-color 0.25s ease;
+}
+.choice-custom-input::placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 14px;
+}
+.choice-custom-input:focus {
+  border-color: var(--accent);
 }
 
 /* Submit */

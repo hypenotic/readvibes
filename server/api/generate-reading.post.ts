@@ -107,9 +107,12 @@ export default defineEventHandler(async (event) => {
       movedOn: Boolean(b.movedOn),
     }))
   const { tilt, boundary, scale } = body
+  const tiltCustom = typeof body.tiltCustom === 'string' ? body.tiltCustom.trim() : null
+  const boundaryCustom = typeof body.boundaryCustom === 'string' ? body.boundaryCustom.trim() : null
+  const scaleCustom = typeof body.scaleCustom === 'string' ? body.scaleCustom.trim() : null
 
   // Build the reader signal for Claude
-  const readerSignal = buildReaderSignal(books, tilt, boundary, scale)
+  const readerSignal = buildReaderSignal(books, tilt, boundary, scale, { tiltCustom, boundaryCustom, scaleCustom })
 
   const client = new Anthropic({
     apiKey: config.anthropicApiKey,
@@ -147,7 +150,7 @@ export default defineEventHandler(async (event) => {
   }
 })
 
-function buildReaderSignal(books, tilt, boundary, scale) {
+function buildReaderSignal(books, tilt, boundary, scale, custom = {}) {
   const tiltMap = {
     'world': 'The world feels real enough to live in',
     'character': 'The characters feel psychologically true',
@@ -186,10 +189,25 @@ function buildReaderSignal(books, tilt, boundary, scale) {
   })
 
   signal += `\nWHAT'S DOING THE WORK (up to 2):\n`
-  tilt.forEach(t => { signal += `- ${tiltMap[t] || t}\n` })
+  tilt.forEach(t => {
+    if (t === 'custom' && custom.tiltCustom) {
+      signal += `- (in their words) ${custom.tiltCustom}\n`
+    } else {
+      signal += `- ${tiltMap[t] || t}\n`
+    }
+  })
 
-  signal += `\nWORST DISAPPOINTMENT: ${boundaryMap[boundary] || boundary}`
-  signal += `\n\nPREFERRED SCALE: ${scaleMap[scale] || scale}`
+  if (boundary === 'custom' && custom.boundaryCustom) {
+    signal += `\nWORST DISAPPOINTMENT: (in their words) ${custom.boundaryCustom}`
+  } else {
+    signal += `\nWORST DISAPPOINTMENT: ${boundaryMap[boundary] || boundary}`
+  }
+
+  if (scale === 'custom' && custom.scaleCustom) {
+    signal += `\n\nPREFERRED SCALE: (in their words) ${custom.scaleCustom}`
+  } else {
+    signal += `\n\nPREFERRED SCALE: ${scaleMap[scale] || scale}`
+  }
 
   return signal
 }
