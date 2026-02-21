@@ -285,8 +285,8 @@ async function sendEmail() {
 
 .posture-definition {
   text-align: center;
-  font-family: var(--font-serif, 'Cormorant', 'Cormorant Garamond', 'Georgia', serif);
-  font-size: 15px;
+  font-family: var(--font-label, 'Spectral', 'Georgia', serif);
+  font-size: 14px;
   font-weight: 300;
   font-style: italic;
   color: var(--cream-dim, #a89878);
@@ -297,14 +297,14 @@ async function sendEmail() {
 /* ── Field Signature — HERO ── */
 .field-signature {
   text-align: center;
-  font-family: var(--font-serif, 'Cormorant', 'Cormorant Garamond', 'Georgia', serif);
+  font-family: 'Cormorant', 'Cormorant Garamond', 'Georgia', serif;
   font-size: 48px;
-  font-weight: 300;
+  font-weight: 500;
   font-style: italic;
-  letter-spacing: 0.01em;
-  line-height: 1.2;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
   color: var(--gold-glow, #e8c888);
-  text-shadow: 0 0 40px rgba(232,200,136,0.18), 0 0 80px rgba(232,200,136,0.06);
+  text-shadow: 0 0 40px rgba(232,200,136,0.22), 0 0 80px rgba(232,200,136,0.08);
   margin-bottom: var(--sp-md);
 }
 
@@ -329,10 +329,10 @@ async function sendEmail() {
 
 /* ── Reading text ── */
 .reading-text {
-  font-family: var(--font-serif, 'Cormorant', 'Cormorant Garamond', 'Georgia', serif);
-  font-size: 20px;
+  font-family: var(--font-label, 'Spectral', 'Georgia', serif);
+  font-size: 17px;
   font-weight: 300;
-  line-height: 2.0;
+  line-height: 1.9;
   color: var(--cream-mid, #d8c8a8);
   margin-bottom: var(--sp-lg);
 }
@@ -359,9 +359,9 @@ async function sendEmail() {
 }
 
 .boundary-label {
-  font-family: var(--font-serif, 'Cormorant', 'Cormorant Garamond', 'Georgia', serif);
-  font-size: 13px;
-  font-weight: 500;
+  font-family: var(--font-label, 'Spectral', 'Georgia', serif);
+  font-size: 12px;
+  font-weight: 300;
   font-style: italic;
   letter-spacing: 0.06em;
   color: var(--gold-dim, #a08040);
@@ -369,11 +369,11 @@ async function sendEmail() {
 }
 
 .boundary p {
-  font-family: var(--font-serif, 'Cormorant', 'Cormorant Garamond', 'Georgia', serif);
-  font-size: 18px;
+  font-family: var(--font-label, 'Spectral', 'Georgia', serif);
+  font-size: 15px;
   font-weight: 300;
   font-style: italic;
-  line-height: 1.85;
+  line-height: 1.8;
   color: var(--cream-bnd, #c8b898);
   margin: 0;
 }
