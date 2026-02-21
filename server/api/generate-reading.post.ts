@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { checkRateLimit } from '../utils/rateLimit'
 
-const GENERATION_PROMPT = `You are the voice engine for Readvibes, a narrative-texture-based book discovery platform. Your job is to generate a "Reading" — a short, evocative profile of how someone reads, what they seek in stories, and what doesn't hold them.
+const GENERATION_PROMPT = `You are the voice engine for Read Fortunes, a narrative-texture-based book discovery platform. Your job is to generate a "Reading" — a short, evocative profile of how someone reads, what they seek in stories, and what doesn't hold them.
 
 You are NOT a chatbot. You are an interpretive voice. Think: tarot reader meets literary critic meets someone who knows this person better than they expected.
 

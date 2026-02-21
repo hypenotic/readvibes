@@ -113,7 +113,7 @@ export default defineEventHandler(async (event) => {
 
     <!-- Footer -->
     <div style="text-align: center; margin-top: 48px; font-size: 9px; letter-spacing: 0.4em; color: #2a2f3a; text-transform: uppercase; font-family: Georgia, serif;">
-      Readvibes
+      Read Fortunes
     </div>
 
   </div>
@@ -122,7 +122,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     await resend.emails.send({
-      from: 'Readvibes <onboarding@resend.dev>',
+      from: 'Read Fortunes <onboarding@resend.dev>',
       to: email,
       subject: `Your Reading${reading.readerName ? `, ${reading.readerName}` : ''}`,
       html,

@@ -1,12 +1,12 @@
-# Readvibes
+# Read Fortunes
 
-**Discover Your Reading.**
+**readfortun.es**
 
-Narrative-texture-based book discovery. Tell us a few books that stayed with you — we'll tell you what they reveal.
+A book discovery web app that generates personalized Readings — short narrative paragraphs describing the alchemical properties that draw a reader to certain books.
 
 ## What is this?
 
-Readvibes builds a reader fingerprint from your favourite books and a few questions about how you read. It generates a personalised "Reading" — an evocative profile of your narrative orientation, what you seek in stories, and what doesn't hold you.
+Read Fortunes builds a reader fingerprint from your favourite books and a few questions about how you read. It generates a personalised "Reading" — an evocative profile of your narrative orientation, what you seek in stories, and what doesn't hold you.
 
 Think: MBTI clarity + Tarot mystique + serious reader tone.
 

@@ -17,7 +17,7 @@
   <!-- Glyph -->
   <text x="600" y="240" text-anchor="middle" font-family="Georgia, serif" font-size="44" fill="#b8a878" opacity="0.4">◈</text>
   <!-- Title -->
-  <text x="600" y="320" text-anchor="middle" font-family="Georgia, serif" font-size="52" fill="#e2e5ec" letter-spacing="3" font-weight="400">Readvibes</text>
+  <text x="600" y="320" text-anchor="middle" font-family="Georgia, serif" font-size="52" fill="#e2e5ec" letter-spacing="3" font-weight="400">Read Fortunes</text>
   <!-- Subtitle -->
   <text x="600" y="370" text-anchor="middle" font-family="Georgia, serif" font-size="18" fill="#8892a8" letter-spacing="6" text-transform="uppercase">DISCOVER YOUR READING</text>
   <!-- Divider -->
@@ -25,5 +25,5 @@
   <!-- Tagline -->
   <text x="600" y="440" text-anchor="middle" font-family="Georgia, serif" font-size="17" fill="#6a7088" font-style="italic">Tell us a few books that stayed with you. We'll tell you what they reveal.</text>
   <!-- Footer -->
-  <text x="600" y="555" text-anchor="middle" font-family="Georgia, serif" font-size="10" fill="#2a2f3a" letter-spacing="4">READVIBES</text>
+  <text x="600" y="555" text-anchor="middle" font-family="Georgia, serif" font-size="10" fill="#2a2f3a" letter-spacing="4">READ FORTUNES</text>
 </svg>

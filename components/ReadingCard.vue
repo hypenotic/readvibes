@@ -79,7 +79,7 @@
       </div>
     </Transition>
 
-    <div class="mark">Readvibes</div>
+    <div class="mark">Read Fortunes</div>
 
     <!-- Email Reading -->
     <div class="email-section">
