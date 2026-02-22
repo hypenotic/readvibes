@@ -1,9 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { checkRateLimit } from '../utils/rateLimit'
 
-const GENERATION_PROMPT = `You are the voice engine for Read Fortunes, a narrative-texture-based book discovery platform. Your job is to generate a "Reading" — a short, evocative profile of how someone reads, what they seek in stories, and what doesn't hold them.
+const GENERATION_PROMPT = `You are the voice engine for Read Fortunes, a narrative-texture-based book discovery platform. Your job is to generate a "Reading" — a short, evocative profile of how someone reads, based on the configuration of narrative forces activated by their constellation.
 
 You are NOT a chatbot. You are an interpretive voice. Think: tarot reader meets literary critic meets someone who knows this person better than they expected.
+
+You articulate the current configuration of narrative forces — not a personality type, not a permanent identity, not a cognitive style diagnosis. A Reading is present tense and fluid. The same reader casting again with different books should get a different Reading.
 
 VOICE RULES (non-negotiable):
 - Second person. Always "you." Never "the reader" or "one."
@@ -49,6 +51,12 @@ ANTI-PATTERNS (never produce output resembling these):
 - "The sweeping narratives in your constellation suggest..." (jacket copy + vague)
 - Any sentence that could apply to 50% of readers. If it's not specific to THIS constellation, cut it.
 
+CONSTELLATION AND FORCES:
+The forces the reader recognized are confirmation signal, not the sole basis for the Reading. Use them to weight your analysis, but let the constellation lead. A reader may not have selected a force that is clearly active in their books — that's signal too. The number of forces selected is also signal: few selections suggest focused attention; many suggest range.
+
+BOUNDARY GENERATION:
+The reader's "what breaks the spell" sentence is the seed for the boundary paragraph. Use their own language and specificity as the starting point. Expand it into the experiential boundary reveal the Voice Constitution requires — honest, felt, non-judgmental — while preserving what makes their sentence specific to them. Do not flatten their words into a generic boundary.
+
 POSTURE FRAMEWORK:
 Readers sit somewhere on two axes:
 - Inhabitor ↔ Architect (do they read from inside the experience, or do they watch the system?)
@@ -74,7 +82,8 @@ GLYPH:
 VOICE EXAMPLE (calibration — study the tone, not the content):
 
 Input constellation: The Remains of the Day, Tinker Tailor Soldier Spy, Pachinko, Station Eleven, The Sympathizer
-Tilt: structure, character | Boundary: obvious-themes | Scale: systems
+Forces recognized: competence under pressure, the thing no one in the room is saying, institutional weight, what holds after the system fails
+What breaks the spell: "When a book tells me what its themes are instead of letting me find them"
 
 Example output fields (for voice calibration only — never copy these verbatim):
 
@@ -91,7 +100,7 @@ Example output fields (for voice calibration only — never copy these verbatim)
 
   boundary: "What tends not to hold you — the book that tells you what to think about it. When the theme is in the title and the metaphor explains itself, the machinery goes slack. You need to find the meaning; having it delivered feels like a lesser book."
 
-Notice: present tense, no genre labels, no flattery, no hedging, precise language, the constellation's books are described by what they DO not what shelf they sit on, the boundary describes an experience. Match this register.
+Notice: present tense, no genre labels, no flattery, no hedging, precise language, the constellation's books are described by what they DO not what shelf they sit on, the boundary expands the reader's own spell-break sentence. Match this register.
 
 OUTPUT FORMAT:
 Return valid JSON only. No markdown, no backticks, no preamble. The JSON must match this exact structure:
@@ -108,7 +117,7 @@ Return valid JSON only. No markdown, no backticks, no preamble. The JSON must ma
     "Second paragraph — the specific texture, what the pleasure actually is",
     "Third paragraph — what resolution or arrival looks like for them"
   ],
-  "boundary": "What tends not to hold you — [honest description of what doesn't work]",
+  "boundary": "What tends not to hold you — [honest description seeded from the reader's spell-break sentence]",
   "fieldSignature": "3-6 word compression (e.g. 'Pressure reveals pattern.', 'Still here. Still moving.')",
   "constellation": ["Book 1", "Book 2", "Book 3", "Book 4", "Book 5"],
   "recommendations": [
@@ -119,7 +128,7 @@ Return valid JSON only. No markdown, no backticks, no preamble. The JSON must ma
     }
   ],
   "signalTrace": ["2-3 plain-language texture tags showing WHY this Reading fits, e.g. 'procedural competence', 'institutional ethics', 'dry restraint'"],
-  "recsFooter": "One sentence describing what these five recommendations share — tied to this reader's gravitational centre"
+  "recsFooter": "One sentence describing what these five recommendations share — tied to this reader's force configuration"
 }`
 
 export default defineEventHandler(async (event) => {
@@ -139,47 +148,49 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
 
   // Validate required fields
-  if (!body || !Array.isArray(body.books) || body.books.filter(b => b?.title?.trim()).length < 3) {
+  if (!body || !Array.isArray(body.books) || body.books.filter((b: any) => {
+    const title = typeof b === 'string' ? b : b?.title
+    return title?.trim()
+  }).length < 3) {
     throw createError({ statusCode: 400, statusMessage: 'At least 3 books are required' })
   }
-  if (!Array.isArray(body.tilt) || body.tilt.length === 0 || body.tilt.length > 2) {
-    throw createError({ statusCode: 400, statusMessage: 'One or two tilt selections are required' })
+  if (!Array.isArray(body.forces) || body.forces.filter((f: any) => typeof f === 'string' && f.trim()).length < 1) {
+    throw createError({ statusCode: 400, statusMessage: 'At least one force selection is required' })
   }
-  if (typeof body.boundary !== 'string' || !body.boundary) {
-    throw createError({ statusCode: 400, statusMessage: 'Boundary selection is required' })
-  }
-  if (typeof body.scale !== 'string' || !body.scale) {
-    throw createError({ statusCode: 400, statusMessage: 'Scale selection is required' })
+  if (typeof body.spellBreak !== 'string' || !body.spellBreak.trim()) {
+    throw createError({ statusCode: 400, statusMessage: 'Spell break text is required' })
   }
 
   // Sanitize free text: cap length, strip control chars, collapse whitespace
   function sanitizeText(val: unknown, maxLen = 200): string | null {
     if (typeof val !== 'string') return null
     const cleaned = val
-      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // strip control chars
-      .replace(/\s+/g, ' ')                                 // collapse whitespace
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+      .replace(/\s+/g, ' ')
       .trim()
       .slice(0, maxLen)
     return cleaned || null
   }
 
-  // Sanitize books — filter empty entries and normalize
+  // Sanitize books — just titles now
   const books = body.books
-    .filter(b => b?.title?.trim())
-    .slice(0, 10) // enforce max 10 books
-    .map(b => ({
-      title: sanitizeText(b.title, 150) || '',
-      immersion: typeof b.immersion === 'number' ? Math.max(0, Math.min(1, b.immersion)) : 0.75,
-      movedOn: Boolean(b.movedOn),
-    }))
-    .filter(b => b.title) // drop any that cleaned to empty
-  const { tilt, boundary, scale } = body
-  const tiltCustom = sanitizeText(body.tiltCustom)
-  const boundaryCustom = sanitizeText(body.boundaryCustom)
-  const scaleCustom = sanitizeText(body.scaleCustom)
+    .map((b: any) => {
+      const title = typeof b === 'string' ? b : b?.title
+      return sanitizeText(title, 150)
+    })
+    .filter((t: string | null): t is string => !!t)
+    .slice(0, 10)
+
+  // Sanitize forces
+  const forces = body.forces
+    .filter((f: any) => typeof f === 'string' && f.trim())
+    .map((f: string) => sanitizeText(f, 100))
+    .filter((f: string | null): f is string => !!f)
+
+  const spellBreak = sanitizeText(body.spellBreak, 300) || ''
 
   // Build the reader signal for Claude
-  const readerSignal = buildReaderSignal(books, tilt, boundary, scale, { tiltCustom, boundaryCustom, scaleCustom })
+  const readerSignal = buildReaderSignal(books, forces, spellBreak)
 
   const client = new Anthropic({
     apiKey: config.anthropicApiKey,
@@ -199,13 +210,13 @@ export default defineEventHandler(async (event) => {
     })
 
     const text = message.content[0].text
-    
+
     // Parse the JSON response
     const cleaned = text.replace(/```json\n?|```\n?/g, '').trim()
     const reading = JSON.parse(cleaned)
 
     // Validate the constellation matches their input
-    reading.constellation = books.map(b => b.title)
+    reading.constellation = books
 
     return reading
   } catch (err) {
@@ -217,64 +228,18 @@ export default defineEventHandler(async (event) => {
   }
 })
 
-function buildReaderSignal(books, tilt, boundary, scale, custom = {}) {
-  const tiltMap = {
-    'world': 'The world feels real enough to live in',
-    'character': 'The characters feel psychologically true',
-    'structure': 'The structure is tight and purposeful',
-    'prose': 'The prose is precise or striking',
-    'momentum': 'The story moves — they need momentum',
-  }
-
-  const boundaryMap = {
-    'beautiful-nothing': 'Beautifully written but nothing really happened',
-    'fast-unearned': 'It moved fast but didn\'t feel earned',
-    'obvious-themes': 'It made its themes obvious',
-    'emotionally-flat': 'It felt emotionally flat',
-    'ending-failed': 'The ending didn\'t land',
-  }
-
-  const scaleMap = {
-    'intimate': 'Intimate and interior',
-    'human': 'Mid-scale human stakes',
-    'systems': 'Large systems / big worlds',
-    'planetary': 'Planetary / civilisational',
-  }
-
-  function describeImmersion(val) {
-    if (val >= 0.9) return 'deeply immersed'
-    if (val >= 0.65) return 'strongly immersed'
-    if (val >= 0.4) return 'moderately immersed'
-    return 'lightly immersed'
-  }
-
-  let signal = `BOOKS THAT STAYED:\n`
-  books.forEach((b, i) => {
-    const depth = describeImmersion(b.immersion)
-    const status = b.movedOn ? 'moved on' : 'still active'
-    signal += `${i + 1}. ${b.title} (${depth}, ${status})\n`
+function buildReaderSignal(books: string[], forces: string[], spellBreak: string): string {
+  let signal = `CONSTELLATION:\n`
+  books.forEach((title, i) => {
+    signal += `${i + 1}. ${title}\n`
   })
 
-  signal += `\nWHAT'S DOING THE WORK (up to 2):\n`
-  tilt.forEach(t => {
-    if (t === 'custom' && custom.tiltCustom) {
-      signal += `- (in their words) ${custom.tiltCustom}\n`
-    } else {
-      signal += `- ${tiltMap[t] || t}\n`
-    }
+  signal += `\nFORCES RECOGNIZED:\n`
+  forces.forEach(f => {
+    signal += `- ${f}\n`
   })
 
-  if (boundary === 'custom' && custom.boundaryCustom) {
-    signal += `\nWORST DISAPPOINTMENT: (in their words) ${custom.boundaryCustom}`
-  } else {
-    signal += `\nWORST DISAPPOINTMENT: ${boundaryMap[boundary] || boundary}`
-  }
-
-  if (scale === 'custom' && custom.scaleCustom) {
-    signal += `\n\nPREFERRED SCALE: (in their words) ${custom.scaleCustom}`
-  } else {
-    signal += `\n\nPREFERRED SCALE: ${scaleMap[scale] || scale}`
-  }
+  signal += `\nWHAT BREAKS THE SPELL: ${spellBreak}`
 
   return signal
 }

@@ -60,14 +60,9 @@ onMounted(() => {
 
   resize()
 
-  // Generate star data from books
+  // Generate star data from books — all stars equal weight
   const bookStars = (props.books || []).map((book, i) => {
     const title = typeof book === 'string' ? book : book?.title || ''
-    const immersion = typeof book === 'object' && typeof book.immersion === 'number' ? book.immersion : 0.75
-    const movedOn = typeof book === 'object' ? Boolean(book.movedOn) : false
-
-    const radius = movedOn ? 2.5 : (2.5 + immersion * 2.5)
-    const brightness = movedOn ? 0.35 : (0.5 + immersion * 0.5)
 
     // Deterministic position from title
     const hx = hashStr(title, 1)
@@ -75,7 +70,7 @@ onMounted(() => {
     const x = 40 + hx * (w - 80)
     const y = 15 + hy * (h - 30)
 
-    return { x, y, radius, brightness, movedOn, immersion, phase: hashStr(title, 3) * Math.PI * 2 }
+    return { x, y, radius: 3.5, brightness: 0.75, phase: hashStr(title, 3) * Math.PI * 2 }
   })
 
   // Dust particles
@@ -108,34 +103,6 @@ onMounted(() => {
     for (const star of bookStars) {
       const pulse = prefersReduced ? 1 : (Math.sin(t * 0.002 + star.phase) * 0.15 + 0.85)
       const alpha = star.brightness * pulse
-
-      // Halo for deeply immersed books
-      if (!star.movedOn && star.immersion >= 0.6) {
-        const haloIntensity = (star.immersion - 0.6) / 0.4
-        const grad = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.radius * 5)
-        grad.addColorStop(0, `rgba(${gold[0]}, ${gold[1]}, ${gold[2]}, ${0.08 * alpha * haloIntensity})`)
-        grad.addColorStop(1, 'transparent')
-        ctx.beginPath()
-        ctx.arc(star.x, star.y, star.radius * 5, 0, Math.PI * 2)
-        ctx.fillStyle = grad
-        ctx.fill()
-
-        // Thin ring
-        ctx.beginPath()
-        ctx.arc(star.x, star.y, star.radius * 2, 0, Math.PI * 2)
-        ctx.strokeStyle = `rgba(${gold[0]}, ${gold[1]}, ${gold[2]}, ${0.08 * alpha * haloIntensity})`
-        ctx.lineWidth = 0.5
-        ctx.stroke()
-      }
-
-      // Ring for moved-on books
-      if (star.movedOn) {
-        ctx.beginPath()
-        ctx.arc(star.x, star.y, star.radius * 2.5, 0, Math.PI * 2)
-        ctx.strokeStyle = `rgba(${gold[0]}, ${gold[1]}, ${gold[2]}, ${0.15 * alpha})`
-        ctx.lineWidth = 0.4
-        ctx.stroke()
-      }
 
       // Star dot
       ctx.beginPath()
@@ -180,7 +147,8 @@ onMounted(() => {
     resize()
     // Recalculate star x positions
     bookStars.forEach((star, i) => {
-      const title = typeof props.books[i] === 'string' ? props.books[i] : props.books[i]?.title || ''
+      const book = props.books[i]
+      const title = typeof book === 'string' ? book : book?.title || ''
       star.x = 40 + hashStr(title, 1) * (w - 80)
       star.y = 15 + hashStr(title, 2) * (h - 30)
     })

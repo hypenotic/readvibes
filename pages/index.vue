@@ -56,29 +56,6 @@
                   @keydown.enter.prevent="handleBookEnter(i)"
                 />
               </div>
-              <!-- Immersion slider + moved-on flag (shown when title is entered) -->
-              <div v-if="books[i].title.trim()" class="book-meta">
-                <div class="immersion-wrap">
-                  <span class="immersion-anchor anchor-low">background noise</span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    v-model.number="books[i].immersion"
-                    class="immersion-slider"
-                    :style="{ '--immersion': books[i].immersion / 100 }"
-                    :aria-label="'How deeply ' + books[i].title + ' stayed with you — from background noise to soul-piercing'"
-                  />
-                  <span class="immersion-anchor anchor-high">soul-piercing</span>
-                </div>
-                <label class="moved-on-toggle">
-                  <input
-                    type="checkbox"
-                    v-model="books[i].movedOn"
-                  />
-                  <span class="moved-on-label">I've moved on from this one</span>
-                </label>
-              </div>
             </div>
           </div>
 
@@ -111,108 +88,56 @@
           </div>
         </section>
 
-        <!-- Step 2: Tilt -->
-        <section v-else-if="formStep === 2" key="tilt" class="form-section" aria-labelledby="tilt-heading">
-          <h2 id="tilt-heading">What pulls you into a book</h2>
-          <p class="section-desc">When a book works for you, what's really doing the work?</p>
-          <p id="tilt-hint" class="section-hint">Choose up to two.</p>
+        <!-- Step 2: Forces -->
+        <section v-else-if="formStep === 2" key="forces" class="form-section" aria-labelledby="forces-heading">
+          <!-- Loading state while generating forces -->
+          <div v-if="forcesLoading" class="forces-loading" role="status" aria-live="polite" aria-busy="true">
+            <div class="forces-loading-glyph" aria-hidden="true">◈</div>
+            <p class="forces-loading-text">Tracing the constellation…</p>
+          </div>
 
-          <div class="choice-grid" role="group" aria-labelledby="tilt-heading" aria-describedby="tilt-hint" @keydown="(e) => navigateChoices(e)">
-            <div v-for="option in tiltOptions" :key="option.id" class="choice-wrap">
+          <!-- Force field display -->
+          <template v-else-if="generatedForces.length > 0">
+            <h2 id="forces-heading">You reach for…</h2>
+
+            <div class="forces-field" role="group" aria-labelledby="forces-heading">
               <button
+                v-for="(phrase, i) in generatedForces"
+                :key="i"
                 type="button"
-                role="checkbox"
-                :aria-checked="tilt.includes(option.id)"
-                class="choice-btn"
-                :class="{ selected: tilt.includes(option.id) }"
-                @click="toggleTilt(option.id)"
+                class="force-phrase"
+                :class="{ selected: selectedForces.includes(phrase) }"
+                :aria-pressed="selectedForces.includes(phrase)"
+                @click="toggleForce(phrase)"
               >
-                <span class="choice-text">{{ option.text }}</span>
-                <span class="tip-toggle" @click.stop="toggleTip(option.id)" aria-label="More info" role="button">?</span>
+                {{ phrase }}
               </button>
-              <div v-if="expandedTip === option.id" class="choice-tip" role="note">{{ option.tip }}</div>
             </div>
-            <div class="choice-wrap">
-              <input
-                v-model="tiltCustom"
-                type="text"
-                maxlength="200"
-                placeholder="Something else — tell us in your own words"
-                class="choice-custom-input"
-                aria-label="Something else that pulls you into a book"
-                @focus="tilt.length < 2 && !tilt.includes('custom') ? tilt = [...tilt, 'custom'] : null"
-              />
-            </div>
+          </template>
+
+          <!-- Error state -->
+          <div v-else-if="forcesError" class="forces-error" role="alert">
+            <p>{{ forcesError }}</p>
+            <button type="button" class="btn-retry" @click="fetchForces">Try again</button>
           </div>
         </section>
 
-        <!-- Step 3: Boundary -->
-        <section v-else-if="formStep === 3" key="boundary" class="form-section" aria-labelledby="boundary-heading">
-          <h2 id="boundary-heading">What tends to push you out</h2>
-          <p class="section-desc">Which disappointment sticks with you?</p>
-          <p id="boundary-hint" class="section-hint">Choose one.</p>
+        <!-- Step 3: Spell Break -->
+        <section v-else-if="formStep === 3" key="spellbreak" class="form-section" aria-labelledby="spellbreak-heading">
+          <h2 id="spellbreak-heading">What breaks the spell?</h2>
+          <p class="section-desc">The moment a book lost your trust.</p>
 
-          <div class="choice-grid" role="radiogroup" aria-labelledby="boundary-heading" aria-describedby="boundary-hint" @keydown="(e) => navigateChoices(e)">
-            <div v-for="option in boundaryOptions" :key="option.id" class="choice-wrap">
-              <button
-                type="button"
-                role="radio"
-                :aria-checked="boundary === option.id"
-                class="choice-btn"
-                :class="{ selected: boundary === option.id }"
-                @click="boundary = option.id"
-              >
-                <span class="choice-text">{{ option.text }}</span>
-                <span class="tip-toggle" @click.stop="toggleTip(option.id)" aria-label="More info" role="button">?</span>
-              </button>
-              <div v-if="expandedTip === option.id" class="choice-tip" role="note">{{ option.tip }}</div>
-            </div>
-            <div class="choice-wrap">
-              <input
-                v-model="boundaryCustom"
-                type="text"
-                maxlength="200"
-                placeholder="Something else — tell us in your own words"
-                class="choice-custom-input"
-                aria-label="Something else that pushes you out of a book"
-                @focus="boundary = 'custom'"
-              />
-            </div>
-          </div>
-        </section>
-
-        <!-- Step 4: Scale -->
-        <section v-else-if="formStep === 4" key="scale" class="form-section" aria-labelledby="scale-heading">
-          <h2 id="scale-heading">What scale feels like home</h2>
-          <p class="section-desc">Where do you feel most at home in a story?</p>
-          <p id="scale-hint" class="section-hint">Choose one.</p>
-
-          <div class="choice-grid" role="radiogroup" aria-labelledby="scale-heading" aria-describedby="scale-hint" @keydown="(e) => navigateChoices(e)">
-            <div v-for="option in scaleOptions" :key="option.id" class="choice-wrap">
-              <button
-                type="button"
-                role="radio"
-                :aria-checked="scale === option.id"
-                class="choice-btn"
-                :class="{ selected: scale === option.id }"
-                @click="scale = option.id"
-              >
-                <span class="choice-text">{{ option.text }}</span>
-                <span class="tip-toggle" @click.stop="toggleTip(option.id)" aria-label="More info" role="button">?</span>
-              </button>
-              <div v-if="expandedTip === option.id" class="choice-tip" role="note">{{ option.tip }}</div>
-            </div>
-            <div class="choice-wrap">
-              <input
-                v-model="scaleCustom"
-                type="text"
-                maxlength="200"
-                placeholder="Something else — tell us in your own words"
-                class="choice-custom-input"
-                aria-label="A different scale that feels like home"
-                @focus="scale = 'custom'"
-              />
-            </div>
+          <div class="spellbreak-field">
+            <input
+              id="spell-break"
+              v-model="spellBreak"
+              type="text"
+              maxlength="300"
+              placeholder="When a book…"
+              class="book-input spell-break-input"
+              aria-label="What breaks the spell — the moment a book lost your trust"
+              @keydown.enter.prevent="canAdvance ? advanceStep() : null"
+            />
           </div>
         </section>
       </Transition>
@@ -254,14 +179,11 @@
         <p v-if="formStep === 0 && filledBookCount < 3" class="step-hint">
           {{ filledBookCount === 0 ? 'Add at least three books to continue.' : `${filledBookCount} of 3 minimum books entered.` }}
         </p>
-        <p v-if="formStep === 2 && tilt.length === 0" class="step-hint">
-          Choose at least one.
+        <p v-if="formStep === 2 && !forcesLoading && generatedForces.length > 0 && selectedForces.length === 0" class="step-hint">
+          Touch the ones that resonate.
         </p>
-        <p v-if="formStep === 3 && !boundary" class="step-hint">
-          Choose one.
-        </p>
-        <p v-if="formStep === 4 && !scale" class="step-hint">
-          Choose one to cast your reading.
+        <p v-if="formStep === 3 && !spellBreak.trim()" class="step-hint">
+          One sentence to cast your reading.
         </p>
       </div>
     </div>
@@ -289,9 +211,9 @@ const error = ref('')
 const errorRef = ref(null)
 
 // Step-by-step form
-const formSteps = ['books', 'name', 'tilt', 'boundary', 'scale']
+const formSteps = ['books', 'name', 'forces', 'spellbreak']
 const formStep = ref(0)
-const transitionDir = ref('forward') // 'forward' or 'back'
+const transitionDir = ref('forward')
 
 const transitionName = computed(() => transitionDir.value === 'forward' ? 'step-forward' : 'step-back')
 
@@ -307,29 +229,33 @@ watch(() => step.value, async (newStep) => {
 
 // Form state
 const readerName = ref('')
-const makeBook = () => ({ title: '', immersion: 75, movedOn: false })
+const makeBook = () => ({ title: '' })
 const books = ref([makeBook(), makeBook(), makeBook()])
-const tilt = ref([])
-const boundary = ref(null)
-const scale = ref(null)
+
+// Forces state
+const generatedForces = ref([])
+const selectedForces = ref([])
+const forcesLoading = ref(false)
+const forcesError = ref('')
+
+// Spell break state
+const spellBreak = ref('')
 
 // Focus management on form step transitions
 watch(() => formStep.value, async () => {
   await nextTick()
   focusFirstInput()
-  // Close any open tooltip when changing steps
-  expandedTip.value = null
 })
 
 // Clear error when user interacts with form
-watch([() => books.value.map(b => b.title).join(','), tilt, boundary, scale], () => {
+watch([() => books.value.map(b => b.title).join(','), selectedForces, spellBreak], () => {
   if (error.value) error.value = ''
 })
 
 function focusFirstInput() {
   const wrap = document.querySelector('.form-section')
   if (!wrap) return
-  const focusable = wrap.querySelector('input, button:not(.btn-add-book):not(.tip-toggle)')
+  const focusable = wrap.querySelector('input, button:not(.btn-add-book):not(.btn-retry)')
   focusable?.focus()
 }
 
@@ -360,7 +286,6 @@ function addBook() {
 }
 
 function handleBookEnter(i) {
-  // If this book has a title and next book exists, focus it
   if (books.value[i].title.trim() && i < books.value.length - 1) {
     document.getElementById('book-' + (i + 1))?.focus()
   } else if (books.value[i].title.trim() && books.value.length < 10) {
@@ -370,64 +295,11 @@ function handleBookEnter(i) {
   }
 }
 
-const tiltOptions = [
-  { id: 'world', text: 'The world feels real enough to live in', tip: 'You notice the weather, the architecture, the way light falls. The world isn\u2019t backdrop \u2014 it\u2019s a character.' },
-  { id: 'character', text: 'The characters feel psychologically true', tip: 'You\u2019re tracking interior logic. When a character acts, you need to believe they would.' },
-  { id: 'structure', text: 'The structure is tight and purposeful', tip: 'You notice when scenes earn their place. Pacing, reveals, the shape of the whole thing matters to you.' },
-  { id: 'prose', text: 'The prose is precise or striking', tip: 'The sentence-level craft is where the book lives for you. Voice, rhythm, word choice.' },
-  { id: 'momentum', text: 'The story moves \u2014 I need momentum', tip: 'You need to feel pulled forward. Doesn\u2019t have to be fast \u2014 but it has to be going somewhere.' },
-]
-
-const boundaryOptions = [
-  { id: 'beautiful-nothing', text: 'Beautifully written but nothing really happened', tip: 'Gorgeous prose that never arrives anywhere. Style without stakes.' },
-  { id: 'fast-unearned', text: 'It moved fast but didn\u2019t feel earned', tip: 'Things happened, but the consequences felt hollow. Speed without weight.' },
-  { id: 'obvious-themes', text: 'It made its themes obvious', tip: 'You could feel the author underlining. The meaning was announced, not discovered.' },
-  { id: 'emotionally-flat', text: 'It felt emotionally flat', tip: 'Technically fine but you didn\u2019t feel anything. Competent but cold.' },
-  { id: 'ending-failed', text: 'The ending didn\u2019t land', tip: 'Everything was working until it wasn\u2019t. The landing matters to you.' },
-]
-
-const scaleOptions = [
-  { id: 'intimate', text: 'Intimate and interior', tip: 'One mind, one room, one relationship. The drama is internal.' },
-  { id: 'human', text: 'Mid-scale human stakes', tip: 'Families, communities, a life unfolding. Stakes you can hold in your hands.' },
-  { id: 'systems', text: 'Large systems / big worlds', tip: 'Institutions, cities, interconnected fates. You like seeing the machinery.' },
-  { id: 'planetary', text: 'Planetary / civilisational', tip: 'History-scale. The sweep of time, the fate of peoples. You read wide.' },
-]
-
-// Tooltip expand state
-const expandedTip = ref(null)
-function toggleTip(id) {
-  expandedTip.value = expandedTip.value === id ? null : id
-}
-
-// "Something else" free-text state
-const tiltCustom = ref('')
-const boundaryCustom = ref('')
-const scaleCustom = ref('')
-
-function toggleTilt(id) {
-  if (tilt.value.includes(id)) {
-    tilt.value = tilt.value.filter(t => t !== id)
-  } else if (tilt.value.length < 2) {
-    tilt.value = [...tilt.value, id]
-  }
-}
-
-// Arrow key navigation within choice groups
-function navigateChoices(e) {
-  const buttons = Array.from(e.currentTarget.querySelectorAll('.choice-btn'))
-  const current = buttons.indexOf(e.target)
-  if (current === -1) return
-
-  let next = -1
-  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
-    next = (current + 1) % buttons.length
-  } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-    next = (current - 1 + buttons.length) % buttons.length
-  }
-
-  if (next !== -1) {
-    e.preventDefault()
-    buttons[next].focus()
+function toggleForce(phrase) {
+  if (selectedForces.value.includes(phrase)) {
+    selectedForces.value = selectedForces.value.filter(f => f !== phrase)
+  } else {
+    selectedForces.value = [...selectedForces.value, phrase]
   }
 }
 
@@ -438,22 +310,61 @@ const canAdvance = computed(() => {
   switch (formStep.value) {
     case 0: return filledBookCount.value >= 3
     case 1: return true // name is optional
-    case 2: return tilt.value.length > 0
-    case 3: return !!boundary.value
-    case 4: return !!scale.value
+    case 2: return selectedForces.value.length > 0
+    case 3: return !!spellBreak.value.trim()
     default: return false
   }
 })
 
 const canSubmit = computed(() => {
-  return filledBookCount.value >= 3 && tilt.value.length > 0 && boundary.value && scale.value
+  return filledBookCount.value >= 3 && selectedForces.value.length > 0 && !!spellBreak.value.trim()
 })
 
-function advanceStep() {
-  if (canAdvance.value && formStep.value < formSteps.length - 1) {
-    transitionDir.value = 'forward'
-    formStep.value++
+async function fetchForces() {
+  forcesLoading.value = true
+  forcesError.value = ''
+
+  try {
+    const titles = books.value
+      .filter(b => b.title.trim())
+      .map(b => b.title.trim())
+
+    const response = await $fetch('/api/generate-forces', {
+      method: 'POST',
+      body: { books: titles },
+    })
+
+    generatedForces.value = response
+    // Clear any previous selections when forces are regenerated
+    selectedForces.value = []
+  } catch (err) {
+    console.error('Failed to generate forces:', err)
+    if (err?.statusCode === 429 || err?.status === 429) {
+      forcesError.value = 'Too many requests. Please wait a moment and try again.'
+    } else {
+      forcesError.value = 'Something went wrong generating your forces. Please try again.'
+    }
+  } finally {
+    forcesLoading.value = false
   }
+}
+
+async function advanceStep() {
+  if (!canAdvance.value && formStep.value !== 1) return
+  if (formStep.value >= formSteps.length - 1) return
+
+  const nextStep = formStep.value + 1
+
+  // If moving to forces step and forces not yet loaded, fetch them
+  if (formSteps[nextStep] === 'forces' && generatedForces.value.length === 0) {
+    transitionDir.value = 'forward'
+    formStep.value = nextStep
+    await fetchForces()
+    return
+  }
+
+  transitionDir.value = 'forward'
+  formStep.value = nextStep
 }
 
 function goBack() {
@@ -465,10 +376,10 @@ function goBack() {
 
 // Loading messages cycle
 const loadingMessages = [
-  'Casting your reading...',
-  'Tracing the constellation...',
-  'Finding the posture...',
-  'Writing your reading...',
+  'Casting your reading…',
+  'Tracing the forces…',
+  'Finding the posture…',
+  'Writing your reading…',
 ]
 const loadingMessage = ref(loadingMessages[0])
 
@@ -487,20 +398,12 @@ async function submitReading() {
   try {
     const filledBooks = books.value
       .filter(b => b.title.trim())
-      .map(b => ({
-        title: b.title.trim(),
-        immersion: b.immersion / 100,
-        movedOn: b.movedOn,
-      }))
+      .map(b => ({ title: b.title.trim() }))
 
     const payload = {
       books: filledBooks,
-      tilt: tilt.value,
-      tiltCustom: tiltCustom.value.trim() || null,
-      boundary: boundary.value,
-      boundaryCustom: boundaryCustom.value.trim() || null,
-      scale: scale.value,
-      scaleCustom: scaleCustom.value.trim() || null,
+      forces: selectedForces.value,
+      spellBreak: spellBreak.value.trim(),
     }
 
     const response = await $fetch('/api/generate-reading', {
@@ -511,12 +414,8 @@ async function submitReading() {
     // Attach reader name to the response (display only, not sent to Claude)
     response.readerName = readerName.value.trim() || null
 
-    // Enrich constellation with immersion data for the card display
-    response.constellation = filledBooks.map(b => ({
-      title: b.title,
-      immersion: b.immersion,
-      movedOn: b.movedOn,
-    }))
+    // Constellation is now just title strings
+    response.constellation = filledBooks.map(b => b.title)
 
     reading.value = response
     step.value = 'reading'
@@ -688,12 +587,6 @@ async function submitReading() {
   color: var(--text-secondary);
   font-weight: 300;
   line-height: 1.6;
-  margin-bottom: 6px;
-}
-.section-hint {
-  font-size: 13px;
-  color: var(--text-muted);
-  font-style: italic;
   margin-bottom: 20px;
 }
 
@@ -737,113 +630,6 @@ async function submitReading() {
   border-color: var(--accent);
 }
 
-/* Book immersion meta */
-.book-meta {
-  padding: 8px 0 12px 28px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.immersion-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.immersion-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 120px;
-  height: 3px;
-  border-radius: 2px;
-  background: linear-gradient(
-    to right,
-    var(--accent) 0%,
-    var(--accent) calc(var(--immersion) * 100%),
-    var(--border) calc(var(--immersion) * 100%),
-    var(--border) 100%
-  );
-  outline: none;
-  cursor: pointer;
-}
-
-.immersion-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--accent);
-  cursor: pointer;
-  transition: transform 0.15s ease;
-}
-
-.immersion-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.3);
-}
-
-.immersion-slider::-moz-range-thumb {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--accent);
-  border: none;
-  cursor: pointer;
-}
-
-.immersion-anchor {
-  font-size: 10px;
-  color: var(--text-muted);
-  font-style: italic;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.anchor-low { opacity: 0.55; }
-.anchor-high { opacity: 0.7; }
-
-.moved-on-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-
-.moved-on-toggle input[type="checkbox"] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 14px;
-  height: 14px;
-  border: 1px solid var(--border-light);
-  border-radius: 2px;
-  background: transparent;
-  cursor: pointer;
-  position: relative;
-  flex-shrink: 0;
-}
-
-.moved-on-toggle input[type="checkbox"]:checked {
-  border-color: var(--accent);
-  background: rgba(184, 168, 120, 0.15);
-}
-
-.moved-on-toggle input[type="checkbox"]:checked::after {
-  content: '';
-  position: absolute;
-  top: 1px;
-  left: 4px;
-  width: 4px;
-  height: 8px;
-  border: solid var(--accent);
-  border-width: 0 1.5px 1.5px 0;
-  transform: rotate(45deg);
-}
-
-.moved-on-label {
-  font-size: 13px;
-  color: var(--text-muted);
-  font-style: italic;
-}
-
 /* Add book button */
 .btn-add-book {
   background: none;
@@ -869,99 +655,91 @@ async function submitReading() {
   width: 100%;
 }
 
-/* Choice buttons */
-.choice-grid {
+/* ---- FORCES ---- */
+.forces-loading {
+  text-align: center;
+  padding: 40px 0;
+}
+.forces-loading-glyph {
+  font-size: 28px;
+  color: var(--accent);
+  opacity: 0.3;
+  margin-bottom: 20px;
+  animation: pulse 2s ease-in-out infinite;
+}
+.forces-loading-text {
+  font-size: 16px;
+  color: var(--text-secondary);
+  font-weight: 300;
+  font-style: italic;
+}
+
+.forces-field {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 24px;
 }
-.choice-wrap {
-  /* wrapper for button + tooltip */
-}
-.choice-btn {
-  width: 100%;
+
+.force-phrase {
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 13px 18px;
-  color: var(--text-primary);
+  border-radius: 20px;
+  padding: 9px 20px;
+  color: var(--text-secondary);
+  font-family: var(--font-serif, 'Cormorant', 'Cormorant Garamond', 'Georgia', serif);
   font-size: 15px;
-  font-weight: 300;
-  text-align: left;
+  font-weight: 400;
+  font-style: italic;
   cursor: pointer;
   transition: all 0.25s ease;
-  line-height: 1.4;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  line-height: 1.3;
 }
-.choice-text {
-  flex: 1;
-}
-.tip-toggle {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 1px solid var(--border-light);
-  color: var(--text-muted);
-  font-size: 11px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  opacity: 0.5;
-  transition: opacity 0.2s ease;
-  cursor: pointer;
-  /* Enlarge touch target without changing visual size */
-  position: relative;
-}
-.tip-toggle::after {
-  content: '';
-  position: absolute;
-  inset: -13px;
-}
-.tip-toggle:hover {
-  opacity: 0.8;
-}
-.choice-tip {
-  padding: 8px 18px 10px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  font-style: italic;
-  font-weight: 300;
-  line-height: 1.65;
-  animation: fadeIn 0.25s ease;
-}
-.choice-btn:hover {
+.force-phrase:hover {
   border-color: var(--border-light);
   color: var(--text-primary);
 }
-.choice-btn.selected {
+.force-phrase.selected {
   border-color: var(--accent);
   color: var(--text-primary);
-  background: rgba(154, 138, 106, 0.06);
+  background: rgba(154, 138, 106, 0.08);
+  box-shadow: 0 0 12px rgba(184, 168, 120, 0.08);
 }
 
-/* Custom "something else" input */
-.choice-custom-input {
-  width: 100%;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 13px 18px;
-  color: var(--text-primary);
-  font-size: 15px;
-  font-weight: 300;
-  outline: none;
-  transition: border-color 0.25s ease;
+.forces-error {
+  text-align: center;
+  padding: 40px 0;
 }
-.choice-custom-input::placeholder {
-  color: var(--text-muted);
-  font-style: italic;
+.forces-error p {
   font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 300;
+  margin-bottom: 16px;
 }
-.choice-custom-input:focus {
+.btn-retry {
+  background: none;
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  padding: 10px 24px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.btn-retry:hover {
   border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+/* ---- SPELL BREAK ---- */
+.spellbreak-field {
+  margin-top: 16px;
+}
+.spell-break-input {
+  width: 100%;
+  border-bottom: 1px solid var(--border-light);
 }
 
 /* ---- FORM NAV ---- */
@@ -1107,18 +885,10 @@ async function submitReading() {
 .btn-continue:focus-visible,
 .btn-back:focus-visible,
 .btn-add-book:focus-visible,
-.choice-btn:focus-visible,
+.btn-retry:focus-visible,
+.force-phrase:focus-visible,
 .book-input:focus-visible,
-.email-input:focus-visible,
-.choice-custom-input:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-.immersion-slider:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 4px;
-}
-.moved-on-toggle input[type="checkbox"]:focus-visible {
+.spell-break-input:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }

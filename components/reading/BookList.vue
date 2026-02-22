@@ -6,14 +6,9 @@
         v-for="(book, i) in books"
         :key="i"
         class="book-row"
-        :class="{ 'is-moved-on': book.movedOn }"
       >
-        <span
-          class="book-dot"
-          :style="{ opacity: dotOpacity(book), boxShadow: dotGlow(book) }"
-        ></span>
-        <span class="book-title">{{ book.title }}</span>
-        <span v-if="book.movedOn" class="book-status">moved on</span>
+        <span class="book-dot"></span>
+        <span class="book-title">{{ getTitle(book) }}</span>
       </li>
     </ul>
   </div>
@@ -27,20 +22,9 @@ const props = defineProps({
   },
 })
 
-function dotOpacity(book) {
-  if (book.movedOn) return 0.25
-  const immersion = typeof book.immersion === 'number' ? book.immersion : 0.75
-  return 0.4 + immersion * 0.6
-}
-
-function dotGlow(book) {
-  if (book.movedOn) return 'none'
-  const immersion = typeof book.immersion === 'number' ? book.immersion : 0.75
-  if (immersion >= 0.7) {
-    const intensity = (immersion - 0.7) / 0.3
-    return `0 0 ${8 + intensity * 8}px var(--gold, #d0a060), 0 0 ${16 + intensity * 8}px rgba(208, 160, 96, ${0.15 + intensity * 0.2})`
-  }
-  return 'none'
+function getTitle(book) {
+  if (typeof book === 'string') return book
+  return book?.title || ''
 }
 </script>
 
@@ -83,6 +67,7 @@ function dotGlow(book) {
   border-radius: 50%;
   background: var(--gold);
   flex-shrink: 0;
+  opacity: 0.7;
 }
 
 .book-title {
@@ -92,20 +77,5 @@ function dotGlow(book) {
   font-weight: 300;
   font-style: italic;
   color: var(--cream-mid);
-}
-
-.book-status {
-  font-family: var(--font-label, 'Spectral', 'Georgia', serif);
-  font-size: 10px;
-  font-weight: 300;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--cream-ghost);
-  flex-shrink: 0;
-}
-
-/* Moved on books: dimmer */
-.is-moved-on .book-title {
-  color: var(--cream-dim);
 }
 </style>
