@@ -305,6 +305,14 @@ watch(() => step.value, async (newStep) => {
   }
 })
 
+// Form state
+const readerName = ref('')
+const makeBook = () => ({ title: '', immersion: 75, movedOn: false })
+const books = ref([makeBook(), makeBook(), makeBook()])
+const tilt = ref([])
+const boundary = ref(null)
+const scale = ref(null)
+
 // Focus management on form step transitions
 watch(() => formStep.value, async () => {
   await nextTick()
@@ -324,14 +332,6 @@ function focusFirstInput() {
   const focusable = wrap.querySelector('input, button:not(.btn-add-book):not(.tip-toggle)')
   focusable?.focus()
 }
-
-// Form state
-const readerName = ref('')
-const makeBook = () => ({ title: '', immersion: 75, movedOn: false })
-const books = ref([makeBook(), makeBook(), makeBook()])
-const tilt = ref([])
-const boundary = ref(null)
-const scale = ref(null)
 
 const bookPlaceholders = [
   'A book that changed how you see things',
