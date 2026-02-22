@@ -222,7 +222,7 @@ async function sendEmail() {
 /* ── Card wrapper ── */
 .card-wrap {
   width: 100%;
-  max-width: 620px;
+  max-width: 740px;
   margin: 0 auto;
   position: relative;
 }
@@ -257,7 +257,7 @@ async function sendEmail() {
 .card-content {
   position: relative;
   z-index: 1;
-  padding: var(--sp-2xl) var(--sp-xl) var(--sp-xl);
+  padding: var(--sp-2xl) var(--sp-2xl) var(--sp-xl);
 }
 
 /* ── Constellation slot ── */
@@ -269,34 +269,34 @@ async function sendEmail() {
 .posture-label {
   text-align: center;
   font-family: var(--font-label, 'Spectral', 'Georgia', serif);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 200;
   letter-spacing: 0.5em;
   text-transform: uppercase;
   color: var(--cream-ghost, #887868);
-  margin-bottom: var(--sp-xs);
+  margin-bottom: var(--sp-sm);
 }
 
 .posture-name {
   text-align: center;
   font-family: var(--font-serif, 'Cormorant', 'Cormorant Garamond', 'Georgia', serif);
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 400;
   font-style: italic;
   letter-spacing: 0.05em;
   color: var(--gold, #d0a060);
-  margin-bottom: var(--sp-xs);
+  margin-bottom: var(--sp-sm);
 }
 
 .posture-definition {
   text-align: center;
   font-family: var(--font-label, 'Spectral', 'Georgia', serif);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 300;
   font-style: italic;
   color: var(--cream-dim, #a89878);
   margin-bottom: var(--sp-lg);
-  line-height: 1.6;
+  line-height: 1.75;
 }
 
 /* ── Field Signature — HERO ── */
@@ -335,15 +335,15 @@ async function sendEmail() {
 /* ── Reading text ── */
 .reading-text {
   font-family: var(--font-label, 'Spectral', 'Georgia', serif);
-  font-size: 17px;
+  font-size: 20px;
   font-weight: 300;
-  line-height: 1.9;
+  line-height: 2.05;
   color: var(--cream-mid, #d8c8a8);
   margin-bottom: var(--sp-lg);
 }
 
 .reading-text p {
-  margin: 0 0 var(--sp-md);
+  margin: 0 0 var(--sp-lg);
 }
 
 .reading-text p:last-child {
@@ -365,7 +365,7 @@ async function sendEmail() {
 
 .boundary-label {
   font-family: var(--font-label, 'Spectral', 'Georgia', serif);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 300;
   font-style: italic;
   letter-spacing: 0.06em;
@@ -375,10 +375,10 @@ async function sendEmail() {
 
 .boundary p {
   font-family: var(--font-label, 'Spectral', 'Georgia', serif);
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 300;
   font-style: italic;
-  line-height: 1.8;
+  line-height: 2.0;
   color: var(--cream-bnd, #c8b898);
   margin: 0;
 }
@@ -415,7 +415,7 @@ async function sendEmail() {
 .signal-trace {
   text-align: center;
   font-family: var(--font-label, 'Spectral', 'Georgia', serif);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 300;
   letter-spacing: 0.12em;
   color: var(--cream-ghost, #887868);
@@ -483,21 +483,21 @@ async function sendEmail() {
 }
 
 .rec-title {
-  font-size: 17px;
+  font-size: 19px;
   color: var(--gold, #d0a060);
   font-weight: 400;
 }
 
 .rec-author {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--cream-dim, #a89878);
   margin-left: 8px;
 }
 
 .rec-note {
   margin: 0 0 0 26px;
-  font-size: 14px;
-  line-height: 1.65;
+  font-size: 16px;
+  line-height: 1.8;
   color: var(--cream-dim, #a89878);
   font-weight: 300;
 }
@@ -510,11 +510,11 @@ async function sendEmail() {
 }
 
 .recs-footer p {
-  font-size: 12.5px;
-  line-height: 1.7;
+  font-size: 14px;
+  line-height: 1.8;
   color: var(--cream-ghost, #887868);
   font-style: italic;
-  max-width: 340px;
+  max-width: 420px;
   margin: 0 auto;
 }
 
@@ -652,13 +652,22 @@ async function sendEmail() {
 .recs-reveal-leave-to { opacity: 0; }
 
 /* ── Responsive ── */
-@media (max-width: 660px) {
+@media (max-width: 780px) {
   .card-content {
     padding: var(--sp-xl) var(--sp-lg) var(--sp-lg);
   }
 
   .field-signature {
     font-size: 34px;
+  }
+
+  .reading-text {
+    font-size: 18px;
+    line-height: 2.0;
+  }
+
+  .boundary p {
+    font-size: 16px;
   }
 }
 

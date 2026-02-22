@@ -461,19 +461,19 @@ async function submitReading() {
   letter-spacing: 0.3em;
 }
 .intro h1 {
-  font-size: 36px;
+  font-size: 42px;
   font-weight: 400;
   color: var(--text-primary);
   letter-spacing: 0.04em;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   line-height: 1.15;
 }
 .intro-sub {
-  font-size: 17px;
+  font-size: 19px;
   color: var(--text-secondary);
-  line-height: 1.7;
+  line-height: 1.8;
   font-weight: 300;
-  margin-bottom: 36px;
+  margin-bottom: 40px;
 }
 .intro-divider {
   display: flex;
@@ -521,7 +521,7 @@ async function submitReading() {
 /* ---- FORM ---- */
 .form-wrap {
   width: 100%;
-  max-width: 520px;
+  max-width: 580px;
   animation: fadeIn 0.8s ease;
 }
 .form-header {
@@ -576,18 +576,18 @@ async function submitReading() {
   min-height: 200px;
 }
 .form-section h2 {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 400;
   color: var(--text-primary);
   letter-spacing: 0.04em;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 .section-desc {
-  font-size: 15px;
+  font-size: 17px;
   color: var(--text-secondary);
   font-weight: 300;
-  line-height: 1.6;
-  margin-bottom: 20px;
+  line-height: 1.7;
+  margin-bottom: 24px;
 }
 
 /* Book inputs */
@@ -595,7 +595,7 @@ async function submitReading() {
   margin-bottom: 16px;
 }
 .book-entry {
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 .book-row {
   display: flex;
@@ -614,8 +614,8 @@ async function submitReading() {
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--border-light);
-  padding: 10px 0;
-  font-size: 16px;
+  padding: 12px 0;
+  font-size: 18px;
   color: var(--text-primary);
   font-weight: 300;
   outline: none;
@@ -624,7 +624,7 @@ async function submitReading() {
 .book-input::placeholder {
   color: var(--text-muted);
   font-style: italic;
-  font-size: 14px;
+  font-size: 16px;
 }
 .book-input:focus {
   border-color: var(--accent);
@@ -686,10 +686,10 @@ async function submitReading() {
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 9px 20px;
+  padding: 10px 22px;
   color: var(--text-secondary);
   font-family: var(--font-serif, 'Cormorant', 'Cormorant Garamond', 'Georgia', serif);
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 400;
   font-style: italic;
   cursor: pointer;
@@ -817,7 +817,7 @@ async function submitReading() {
   margin-top: 12px;
 }
 .step-hint {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-muted);
   font-style: italic;
 }
@@ -876,7 +876,7 @@ async function submitReading() {
 /* ---- READING ---- */
 .reading-wrap {
   width: 100%;
-  max-width: 660px;
+  max-width: 780px;
 }
 
 /* ---- FOCUS ---- */
