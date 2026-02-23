@@ -7,7 +7,7 @@
     <div v-if="step === 'intro'" class="intro">
       <div class="intro-glyph" aria-hidden="true">◈</div>
       <h1>Read Fortunes</h1>
-      <p class="intro-sub">Name what pulls you toward certain books.<br>Then let it guide you to what's next.</p>
+      <p class="intro-sub">Something pulls you toward certain books.<br>Let's find out what it is.</p>
       <div class="intro-divider" aria-hidden="true">
         <span class="line"></span>
         <span class="dot"></span>
@@ -31,7 +31,7 @@
         <!-- Step 0: Books + Name -->
         <section v-if="formStep === 0" key="books" class="form-section" aria-labelledby="books-heading">
           <h2 id="books-heading">Books that have stayed with you</h2>
-          <p class="section-desc">Not the best. The ones that linger. Three minimum — five or more is better.</p>
+          <p class="section-desc">Not the best. The ones that linger. Five minimum — more is better.</p>
 
           <div class="book-inputs">
             <div v-for="(book, i) in books" :key="i" class="book-entry">
@@ -60,7 +60,7 @@
           </button>
 
           <!-- Open-ended book entries — appear once 3+ prompted books are filled -->
-          <div v-if="filledBookCount >= 3" class="open-books-section">
+          <div v-if="filledBookCount >= 5" class="open-books-section">
             <p class="open-books-label">Or just... one more, for any reason.</p>
             <div v-for="(book, j) in openBooks" :key="'open-' + j" class="book-entry">
               <div class="book-row">
@@ -119,8 +119,8 @@
 
           <!-- Force field display -->
           <template v-else-if="generatedForces.length > 0">
-            <h2 id="forces-heading">You reach for…</h2>
-            <p class="section-desc forces-instruction">Select the ones that feel like yours.</p>
+            <h2 id="forces-heading">We found these in your books.</h2>
+            <p class="section-desc forces-instruction">Tap the ones that feel true for you right now.</p>
 
             <div class="forces-field" role="group" aria-labelledby="forces-heading">
               <button
@@ -147,7 +147,7 @@
         <!-- Step 2: Spell Break + Cast -->
         <section v-else-if="formStep === 2" key="spellbreak" class="form-section" aria-labelledby="spellbreak-heading">
           <h2 id="spellbreak-heading">What breaks the spell?</h2>
-          <p class="section-desc">Name the thing that pulls you out of a book.</p>
+          <p class="section-desc">Name something — anything — that makes you put a book down.</p>
 
           <div class="spellbreak-field">
             <input
@@ -203,8 +203,8 @@
 
       <!-- Validation hint -->
       <div aria-live="polite" class="validation-live">
-        <p v-if="formStep === 0 && filledBookCount < 3" class="step-hint">
-          {{ filledBookCount === 0 ? 'Add at least three books to continue.' : `${filledBookCount} of 3 minimum books entered.` }}
+        <p v-if="formStep === 0 && filledBookCount < 5" class="step-hint">
+          {{ filledBookCount === 0 ? 'Add at least five books to continue.' : `${filledBookCount} of 5 minimum books entered.` }}
         </p>
       </div>
     </div>
@@ -262,7 +262,7 @@ watch(() => step.value, async (newStep) => {
 // Form state
 const readerName = ref('')
 const makeBook = () => ({ title: '' })
-const books = ref([makeBook(), makeBook(), makeBook()])
+const books = ref([makeBook(), makeBook(), makeBook(), makeBook(), makeBook()])
 const openBooks = ref([])
 
 // Forces state
@@ -406,7 +406,7 @@ const filledBookCount = computed(() =>
 
 const canAdvance = computed(() => {
   switch (formStep.value) {
-    case 0: return filledBookCount.value >= 3
+    case 0: return filledBookCount.value >= 5
     case 1: return selectedForces.value.length > 0
     case 2: return !!spellBreak.value.trim()
     default: return false
@@ -414,7 +414,7 @@ const canAdvance = computed(() => {
 })
 
 const canSubmit = computed(() => {
-  return filledBookCount.value >= 3 && selectedForces.value.length > 0 && !!spellBreak.value.trim()
+  return filledBookCount.value >= 5 && selectedForces.value.length > 0 && !!spellBreak.value.trim()
 })
 
 function allFilledBooks() {
@@ -909,11 +909,11 @@ async function submitReading() {
 .btn-cast {
   position: relative;
   background: none;
-  border: 1px solid var(--border);
+  border: 1px solid var(--cream-dim, #a89878);
   border-radius: 6px;
   padding: 22px 64px;
-  color: var(--text-muted);
-  font-size: 1rem;
+  color: var(--cream-mid, #d8c8a8);
+  font-size: 1.05rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
@@ -985,7 +985,7 @@ async function submitReading() {
 }
 
 .btn-cast:disabled:not(.ready):not(.charging) {
-  opacity: 0.25;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 

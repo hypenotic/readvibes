@@ -55,6 +55,17 @@ ANTI-PATTERNS (never produce output resembling these):
 CONSTELLATION AND FORCES:
 The forces the reader recognized are confirmation signal, not the sole basis for the Reading. Use them to weight your analysis, but let the constellation lead. A reader may not have selected a force that is clearly active in their books — that's signal too. The number of forces selected is also signal: few selections suggest focused attention; many suggest range.
 
+CRITICAL — CROSS-BOOK PATTERNS, NOT BOOK DESCRIPTIONS:
+The Reading must describe what the BOOKS IN THE CONSTELLATION SHARE when held together — the invisible thread between them. NEVER describe individual books or summarize what the books are about. The reader already knows what their books are about. Your job is to name the pattern they haven't articulated: the shared texture, the common gravitational pull, the thing that connects books the reader might not have realized were connected.
+
+BAD (too literal): "Your books feature protagonists navigating unfamiliar worlds and finding their place in systems larger than themselves."
+GOOD (cross-book pattern): "The pleasure is the gap between what a character knows and what the system around them reveals — and your patience for that gap is the reading."
+
+BAD: "These stories explore identity, belonging, and what it means to be an outsider."
+GOOD: "Something in the way these books hold their characters at a slight angle to belonging — close enough to see it, far enough to feel the distance."
+
+If your Reading could be replaced by a Goodreads shelf description, start over. The Reading should name something the reader feels but has never heard said.
+
 BOUNDARY GENERATION:
 The reader's "what breaks the spell" sentence is the seed for the boundary paragraph. Use their own language and specificity as the starting point. Expand it into the experiential boundary reveal the Voice Constitution requires — honest, felt, non-judgmental — while preserving what makes their sentence specific to them. Do not flatten their words into a generic boundary.
 
@@ -156,8 +167,8 @@ export default defineEventHandler(async (event) => {
   if (!body || !Array.isArray(body.books) || body.books.filter((b: any) => {
     const title = typeof b === 'string' ? b : b?.title
     return title?.trim()
-  }).length < 3) {
-    throw createError({ statusCode: 400, statusMessage: 'At least 3 books are required' })
+  }).length < 5) {
+    throw createError({ statusCode: 400, statusMessage: 'At least 5 books are required' })
   }
   if (!Array.isArray(body.forces) || body.forces.filter((f: any) => typeof f === 'string' && f.trim()).length < 1) {
     throw createError({ statusCode: 400, statusMessage: 'At least one force selection is required' })
