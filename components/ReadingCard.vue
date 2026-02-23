@@ -26,18 +26,7 @@
           {{ reading.signalTrace.join(' · ') }}
         </div>
 
-        <!-- Posture label -->
-        <div class="posture-label enter-posture" :class="{ 'pre-enter': !entered.posture }">Your reading posture</div>
-
-        <!-- Posture name (subtitle from API) -->
-        <div class="posture-name enter-posture" :class="{ 'pre-enter': !entered.posture }">{{ reading.subtitle }}</div>
-
-        <!-- Posture definition -->
-        <div v-if="reading.postureDefinition" class="posture-definition enter-posture" :class="{ 'pre-enter': !entered.posture }">
-          {{ reading.postureDefinition }}
-        </div>
-
-        <!-- Field Signature — HERO -->
+        <!-- Field Signature — HERO (leads the card) -->
         <div class="field-signature enter-signature" :class="{ 'pre-enter': !entered.signature }">
           {{ reading.fieldSignature }}
         </div>
@@ -45,6 +34,15 @@
         <!-- Reader name + temporal marker -->
         <div class="reader-info enter-name" :class="{ 'pre-enter': !entered.name }">
           {{ displayName }}<span v-if="displayName && temporalMarker"> &middot; </span>{{ temporalMarker }}
+        </div>
+
+        <!-- Posture (context, after the hook) -->
+        <div class="posture-label enter-posture" :class="{ 'pre-enter': !entered.posture }">Your reading posture</div>
+
+        <div class="posture-name enter-posture" :class="{ 'pre-enter': !entered.posture }">{{ reading.subtitle }}</div>
+
+        <div v-if="reading.postureDefinition" class="posture-definition enter-posture" :class="{ 'pre-enter': !entered.posture }">
+          {{ reading.postureDefinition }}
         </div>
 
         <!-- Ornamental divider (Phase 2) -->
@@ -88,7 +86,7 @@
         :aria-expanded="showRecs"
         aria-controls="recommendations-panel"
       >
-        {{ showRecs ? 'Close' : 'Books that might find you' }}
+        {{ showRecs ? 'Hide recommendations' : 'Books that might find you' }}
       </button>
     </div>
 
@@ -111,33 +109,34 @@
           </li>
         </ol>
 
-        <!-- Email Reading (inside recs, so it appears after recommendations) -->
-        <div class="email-section">
-          <div v-if="!emailSent" class="email-form">
-            <p class="email-prompt">Keep a copy of your Reading?</p>
-            <div class="email-row">
-              <input
-                v-model="email"
-                type="email"
-                placeholder="your@email.com"
-                class="email-input"
-                aria-label="Email address"
-                @keyup.enter="sendEmail"
-              />
-              <button
-                class="email-btn"
-                :disabled="!email.trim() || emailSending"
-                @click="sendEmail"
-              >
-                {{ emailSending ? 'Sending...' : 'Send' }}
-              </button>
-            </div>
-            <p v-if="emailError" class="email-error" role="alert">{{ emailError }}</p>
-          </div>
-          <p v-else class="email-sent">Sent. Check your inbox.</p>
-        </div>
       </div>
     </Transition>
+
+    <!-- Email Reading (always visible, below recs toggle) -->
+    <div class="email-section">
+      <div v-if="!emailSent" class="email-form">
+        <p class="email-prompt">Keep a copy of your Reading?</p>
+        <div class="email-row">
+          <input
+            v-model="email"
+            type="email"
+            placeholder="your@email.com"
+            class="email-input"
+            aria-label="Email address"
+            @keyup.enter="sendEmail"
+          />
+          <button
+            class="email-btn"
+            :disabled="!email.trim() || emailSending"
+            @click="sendEmail"
+          >
+            {{ emailSending ? 'Sending...' : 'Send' }}
+          </button>
+        </div>
+        <p v-if="emailError" class="email-error" role="alert">{{ emailError }}</p>
+      </div>
+      <p v-else class="email-sent">Sent. Check your inbox.</p>
+    </div>
   </article>
 </template>
 
@@ -530,9 +529,7 @@ async function sendEmail() {
 
 /* ── Email section ── */
 .email-section {
-  margin-top: var(--sp-lg, 34px);
-  padding-top: var(--sp-lg, 34px);
-  border-top: 1px solid var(--gold-ink, #3a2a14);
+  margin-top: var(--sp-xl, 55px);
   text-align: center;
 }
 

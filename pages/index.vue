@@ -6,37 +6,29 @@
     <!-- INTRO STATE -->
     <div v-if="step === 'intro'" class="intro">
       <div class="intro-glyph" aria-hidden="true">◈</div>
-      <h1>Take a Reading</h1>
-      <p class="intro-sub">A few books and a few questions.<br>We'll tell you what draws you in.</p>
+      <h1>Read Fortunes</h1>
+      <p class="intro-sub">Uncover the forces currently working on you.<br>Then let them lead you to what's next.</p>
       <div class="intro-divider" aria-hidden="true">
         <span class="line"></span>
         <span class="dot"></span>
         <span class="line"></span>
       </div>
-      <button class="btn-begin" @click="step = 'form'">Take a Reading</button>
+      <button class="btn-begin" @click="step = 'form'">Begin</button>
       <p class="intro-note">Takes about two minutes. No account needed.</p>
     </div>
 
     <!-- FORM STATE (step-by-step) -->
     <div v-if="step === 'form'" class="form-wrap">
-      <div class="form-header">
-        <div class="form-divider"></div>
-      </div>
 
       <!-- Error message -->
       <div v-if="error" class="error-message" role="alert" tabindex="-1" ref="errorRef">
         <p>{{ error }}</p>
       </div>
 
-      <!-- Step counter -->
-      <div class="step-counter" aria-live="polite" aria-atomic="true">
-        {{ formStep + 1 }} of {{ formSteps.length }}
-      </div>
-
       <!-- Step transitions -->
       <Transition :name="transitionName" mode="out-in">
 
-        <!-- Step 0: Books -->
+        <!-- Step 0: Books + Name -->
         <section v-if="formStep === 0" key="books" class="form-section" aria-labelledby="books-heading">
           <h2 id="books-heading">Books that have stayed with you</h2>
           <p class="section-desc">Not the best. The ones that linger. Three minimum — five or more is better.</p>
@@ -66,14 +58,9 @@
           >
             + Add another book <span class="book-count-hint">({{ books.length }} of 10)</span>
           </button>
-        </section>
 
-        <!-- Step 1: Name -->
-        <section v-else-if="formStep === 1" key="name" class="form-section" aria-labelledby="name-heading">
-          <h2 id="name-heading">What should we call you?</h2>
-          <p class="section-desc">First name is enough. Or skip it entirely.</p>
-
-          <div class="name-field-step">
+          <!-- Name field folded into books step -->
+          <div class="name-field-inline">
             <input
               id="reader-name"
               v-model="readerName"
@@ -82,13 +69,13 @@
               class="book-input name-input"
               autocomplete="given-name"
               aria-label="First name (optional)"
-              @keydown.enter.prevent="advanceStep"
+              @keydown.enter.prevent="canAdvance ? advanceStep() : null"
             />
           </div>
         </section>
 
-        <!-- Step 2: Forces -->
-        <section v-else-if="formStep === 2" key="forces" class="form-section" aria-labelledby="forces-heading">
+        <!-- Step 1: Forces -->
+        <section v-else-if="formStep === 1" key="forces" class="form-section" aria-labelledby="forces-heading">
           <!-- Loading state while generating forces -->
           <div v-if="forcesLoading" class="forces-loading" role="status" aria-live="polite" aria-busy="true">
             <div class="forces-loading-glyph" aria-hidden="true">◈</div>
@@ -98,6 +85,7 @@
           <!-- Force field display -->
           <template v-else-if="generatedForces.length > 0">
             <h2 id="forces-heading">You reach for…</h2>
+            <p class="section-desc forces-instruction">Select the ones that feel like yours.</p>
 
             <div class="forces-field" role="group" aria-labelledby="forces-heading">
               <button
@@ -121,10 +109,10 @@
           </div>
         </section>
 
-        <!-- Step 3: Spell Break -->
-        <section v-else-if="formStep === 3" key="spellbreak" class="form-section" aria-labelledby="spellbreak-heading">
+        <!-- Step 2: Spell Break + Cast -->
+        <section v-else-if="formStep === 2" key="spellbreak" class="form-section" aria-labelledby="spellbreak-heading">
           <h2 id="spellbreak-heading">What breaks the spell?</h2>
-          <p class="section-desc">The moment a book lost your trust.</p>
+          <p class="section-desc">Name the thing that pulls you out of a book.</p>
 
           <div class="spellbreak-field">
             <input
@@ -134,9 +122,23 @@
               maxlength="300"
               placeholder="When a book…"
               class="book-input spell-break-input"
-              aria-label="What breaks the spell — the moment a book lost your trust"
-              @keydown.enter.prevent="canAdvance ? advanceStep() : null"
+              aria-label="What breaks the spell"
+              @keydown.enter.prevent="canSubmit ? submitReading() : null"
             />
+          </div>
+
+          <!-- Cast button — the climax -->
+          <div class="cast-stage">
+            <div class="cast-glow" aria-hidden="true"></div>
+            <button
+              type="button"
+              class="btn-cast"
+              :class="{ ready: canSubmit, charging: loading }"
+              :disabled="!canSubmit || loading"
+              @click="submitReading"
+            >
+              <span class="cast-text">{{ loading ? 'Casting…' : 'Cast your reading' }}</span>
+            </button>
           </div>
         </section>
       </Transition>
@@ -162,15 +164,8 @@
         >
           Continue
         </button>
-        <button
-          v-else
-          type="button"
-          class="btn-reveal"
-          :disabled="!canSubmit || loading"
-          @click="submitReading"
-        >
-          {{ loading ? 'Casting your reading...' : 'Cast' }}
-        </button>
+        <!-- Cast button lives inside the spell break section now, not here -->
+        <span v-else></span>
       </div>
 
       <!-- Validation hint -->
@@ -178,24 +173,29 @@
         <p v-if="formStep === 0 && filledBookCount < 3" class="step-hint">
           {{ filledBookCount === 0 ? 'Add at least three books to continue.' : `${filledBookCount} of 3 minimum books entered.` }}
         </p>
-        <p v-if="formStep === 2 && !forcesLoading && generatedForces.length > 0 && selectedForces.length === 0" class="step-hint">
-          Touch the ones that resonate.
-        </p>
-        <p v-if="formStep === 3 && !spellBreak.trim()" class="step-hint">
-          One sentence to cast your reading.
-        </p>
       </div>
     </div>
 
     <!-- LOADING STATE -->
     <div v-if="step === 'loading'" class="loading-state" role="status" aria-live="polite" aria-busy="true">
-      <div class="loading-glyph" aria-hidden="true">◈</div>
-      <p class="loading-text">{{ loadingMessage }}</p>
+      <div class="loading-orb" aria-hidden="true">
+        <div class="orb-ring ring-1"></div>
+        <div class="orb-ring ring-2"></div>
+        <div class="orb-ring ring-3"></div>
+        <div class="orb-core">◈</div>
+      </div>
+      <Transition name="loading-fade" mode="out-in">
+        <p class="loading-text" :key="loadingMessage">{{ loadingMessage }}</p>
+      </Transition>
     </div>
 
     <!-- READING STATE -->
     <div v-if="step === 'reading'" class="reading-wrap">
       <ReadingCard :reading="reading" />
+
+      <div class="reset-link">
+        <button type="button" class="btn-reset" @click="resetEverything">Take another reading</button>
+      </div>
     </div>
   </main>
 </template>
@@ -209,8 +209,8 @@ const reading = ref(null)
 const error = ref('')
 const errorRef = ref(null)
 
-// Step-by-step form
-const formSteps = ['books', 'name', 'forces', 'spellbreak']
+// 3-step form: books+name → forces → spellbreak+cast
+const formSteps = ['books', 'forces', 'spellbreak']
 const formStep = ref(0)
 const transitionDir = ref('forward')
 
@@ -254,7 +254,7 @@ watch([() => books.value.map(b => b.title).join(','), selectedForces, spellBreak
 function focusFirstInput() {
   const wrap = document.querySelector('.form-section')
   if (!wrap) return
-  const focusable = wrap.querySelector('input, button:not(.btn-add-book):not(.btn-retry)')
+  const focusable = wrap.querySelector('input, button:not(.btn-add-book):not(.btn-retry):not(.btn-cast)')
   focusable?.focus()
 }
 
@@ -308,9 +308,8 @@ const filledBookCount = computed(() => books.value.filter(b => b.title.trim()).l
 const canAdvance = computed(() => {
   switch (formStep.value) {
     case 0: return filledBookCount.value >= 3
-    case 1: return true // name is optional
-    case 2: return selectedForces.value.length > 0
-    case 3: return !!spellBreak.value.trim()
+    case 1: return selectedForces.value.length > 0
+    case 2: return !!spellBreak.value.trim()
     default: return false
   }
 })
@@ -334,7 +333,6 @@ async function fetchForces() {
     })
 
     generatedForces.value = response
-    // Clear any previous selections when forces are regenerated
     selectedForces.value = []
   } catch (err) {
     console.error('Failed to generate forces:', err)
@@ -349,7 +347,7 @@ async function fetchForces() {
 }
 
 async function advanceStep() {
-  if (!canAdvance.value && formStep.value !== 1) return
+  if (!canAdvance.value) return
   if (formStep.value >= formSteps.length - 1) return
 
   const nextStep = formStep.value + 1
@@ -373,7 +371,7 @@ function goBack() {
   }
 }
 
-// Loading messages cycle
+// Loading messages cycle with slower cadence
 const loadingMessages = [
   'Casting your reading…',
   'Tracing the forces…',
@@ -382,17 +380,31 @@ const loadingMessages = [
 ]
 const loadingMessage = ref(loadingMessages[0])
 
+function resetEverything() {
+  step.value = 'intro'
+  formStep.value = 0
+  reading.value = null
+  error.value = ''
+  readerName.value = ''
+  books.value = [makeBook(), makeBook(), makeBook()]
+  generatedForces.value = []
+  selectedForces.value = []
+  spellBreak.value = ''
+  forcesError.value = ''
+  loadingMessage.value = loadingMessages[0]
+}
+
 async function submitReading() {
   error.value = ''
   loading.value = true
   step.value = 'loading'
 
-  // Cycle loading messages
+  // Cycle loading messages — slower for ceremony
   let msgIndex = 0
   const msgInterval = setInterval(() => {
     msgIndex = (msgIndex + 1) % loadingMessages.length
     loadingMessage.value = loadingMessages[msgIndex]
-  }, 2800)
+  }, 4200)
 
   try {
     const filledBooks = books.value
@@ -410,10 +422,7 @@ async function submitReading() {
       body: payload,
     })
 
-    // Attach reader name to the response (display only, not sent to Claude)
     response.readerName = readerName.value.trim() || null
-
-    // Constellation is now just title strings
     response.constellation = filledBooks.map(b => b.title)
 
     reading.value = response
@@ -426,7 +435,6 @@ async function submitReading() {
       error.value = 'Something went wrong generating your reading. Please try again.'
     }
     step.value = 'form'
-    // Focus the error message
     await nextTick()
     errorRef.value?.focus()
   } finally {
@@ -442,6 +450,7 @@ async function submitReading() {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   padding: 60px 20px 100px;
   position: relative;
 }
@@ -449,7 +458,7 @@ async function submitReading() {
 /* ---- INTRO ---- */
 .intro {
   text-align: center;
-  max-width: 460px;
+  max-width: 500px;
   animation: fadeIn 1.2s ease;
 }
 .intro-glyph {
@@ -460,19 +469,21 @@ async function submitReading() {
   letter-spacing: 0.3em;
 }
 .intro h1 {
-  font-size: 42px;
-  font-weight: 400;
+  font-size: 54px;
+  font-weight: 300;
+  font-style: italic;
   color: var(--text-primary);
-  letter-spacing: 0.04em;
-  margin-bottom: 20px;
-  line-height: 1.15;
+  font-family: var(--font-serif);
+  letter-spacing: 0.02em;
+  margin-bottom: 24px;
+  line-height: 1.1;
 }
 .intro-sub {
   font-size: 19px;
   color: var(--text-secondary);
   line-height: 1.8;
   font-weight: 300;
-  margin-bottom: 40px;
+  margin-bottom: 44px;
 }
 .intro-divider {
   display: flex;
@@ -497,7 +508,7 @@ async function submitReading() {
   background: none;
   border: 1px solid var(--border-light);
   border-radius: 4px;
-  padding: 14px 44px;
+  padding: 16px 56px;
   color: var(--text-secondary);
   font-size: 14px;
   letter-spacing: 0.2em;
@@ -522,26 +533,6 @@ async function submitReading() {
   width: 100%;
   max-width: 580px;
   animation: fadeIn 0.8s ease;
-}
-.form-header {
-  text-align: center;
-  margin-bottom: 32px;
-}
-.form-divider {
-  width: 40px;
-  height: 1px;
-  margin: 16px auto 0;
-  background: linear-gradient(90deg, transparent, var(--border-light), transparent);
-}
-
-/* Step counter */
-.step-counter {
-  text-align: center;
-  font-size: 13px;
-  color: var(--text-muted);
-  font-style: italic;
-  margin-bottom: 24px;
-  letter-spacing: 0.05em;
 }
 
 /* Error message */
@@ -580,6 +571,11 @@ async function submitReading() {
   font-weight: 300;
   line-height: 1.7;
   margin-bottom: 24px;
+}
+.forces-instruction {
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 20px;
 }
 
 /* Book inputs */
@@ -631,7 +627,7 @@ async function submitReading() {
   font-style: italic;
   cursor: pointer;
   padding: 12px 0;
-  margin-bottom: 20px;
+  margin-bottom: 8px;
   transition: color 0.2s ease;
 }
 .btn-add-book:hover {
@@ -642,10 +638,12 @@ async function submitReading() {
   font-size: 12px;
 }
 
-/* Name field (step view) */
-.name-field-step {
+/* Name field (inline at bottom of books step) */
+.name-field-inline {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
   max-width: 320px;
-  margin-top: 16px;
 }
 .name-input {
   width: 100%;
@@ -654,14 +652,14 @@ async function submitReading() {
 /* ---- FORCES ---- */
 .forces-loading {
   text-align: center;
-  padding: 40px 0;
+  padding: 60px 0;
 }
 .forces-loading-glyph {
-  font-size: 28px;
+  font-size: 32px;
   color: var(--accent);
   opacity: 0.3;
-  margin-bottom: 20px;
-  animation: pulse 2s ease-in-out infinite;
+  margin-bottom: 24px;
+  animation: pulse 2.5s ease-in-out infinite;
 }
 .forces-loading-text {
   font-size: 16px;
@@ -675,7 +673,7 @@ async function submitReading() {
   flex-wrap: wrap;
   gap: 10px;
   justify-content: center;
-  margin-top: 24px;
+  margin-top: 8px;
 }
 
 .force-phrase {
@@ -738,6 +736,133 @@ async function submitReading() {
   border-bottom: 1px solid var(--border-light);
 }
 
+/* ---- CAST BUTTON — THE CLIMAX ---- */
+.cast-stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-top: 56px;
+  padding-top: 40px;
+}
+
+.cast-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 280px;
+  height: 120px;
+  border-radius: 60px;
+  background: radial-gradient(ellipse at center, rgba(232,200,136,0.12) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+
+.btn-cast {
+  position: relative;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 22px 64px;
+  color: var(--text-muted);
+  font-size: 16px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-family: var(--font-label, 'Spectral', 'Georgia', serif);
+  cursor: pointer;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn-cast::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, transparent 30%, rgba(232,200,136,0.15) 50%, transparent 70%);
+  background-size: 200% 200%;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: -1;
+}
+
+.btn-cast::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 300%;
+  height: 300%;
+  background: radial-gradient(circle, rgba(232,200,136,0.2) 0%, transparent 60%);
+  border-radius: 50%;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
+  opacity: 0;
+  z-index: -1;
+}
+
+/* Ready state — spell break is filled */
+.btn-cast.ready {
+  border-color: var(--accent);
+  color: var(--text-primary);
+  box-shadow: 0 0 20px rgba(184, 168, 120, 0.08), 0 0 60px rgba(184, 168, 120, 0.04);
+}
+
+.btn-cast.ready::before {
+  opacity: 1;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+.btn-cast.ready ~ .cast-glow {
+  opacity: 1;
+  animation: castBreathe 4s ease-in-out infinite;
+}
+
+.btn-cast.ready:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 30px rgba(184, 168, 120, 0.15), 0 0 80px rgba(184, 168, 120, 0.06);
+  border-color: var(--gold, #d0a060);
+}
+
+.btn-cast.ready:hover::after {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+/* Charging state — clicked, submitting */
+.btn-cast.charging {
+  animation: castPulse 1.5s ease-in-out infinite;
+  border-color: var(--gold, #d0a060);
+}
+
+.btn-cast:disabled:not(.ready):not(.charging) {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.cast-text {
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 200%; }
+  50% { background-position: 0% 0%; }
+  100% { background-position: 200% 200%; }
+}
+
+@keyframes castBreathe {
+  0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+}
+
+@keyframes castPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(184, 168, 120, 0.1); }
+  50% { box-shadow: 0 0 40px rgba(184, 168, 120, 0.25), 0 0 80px rgba(184, 168, 120, 0.1); }
+}
+
 /* ---- FORM NAV ---- */
 .form-nav {
   display: flex;
@@ -781,28 +906,6 @@ async function submitReading() {
 }
 .btn-continue:disabled {
   opacity: 0.35;
-  cursor: not-allowed;
-}
-
-.btn-reveal {
-  background: none;
-  border: 1px solid var(--border-light);
-  border-radius: 4px;
-  padding: 14px 44px;
-  color: var(--text-secondary);
-  font-size: 14px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  font-family: var(--font-system);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.btn-reveal:hover:not(:disabled) {
-  border-color: var(--accent);
-  color: var(--text-primary);
-}
-.btn-reveal:disabled {
-  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -854,19 +957,79 @@ async function submitReading() {
   text-align: center;
   animation: fadeIn 0.8s ease;
 }
-.loading-glyph {
-  font-size: 32px;
-  color: var(--accent);
-  opacity: 0.3;
-  margin-bottom: 24px;
-  animation: pulse 2s ease-in-out infinite;
+
+.loading-orb {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 40px;
 }
+
+.orb-core {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: var(--accent);
+  opacity: 0.5;
+  animation: pulse 3s ease-in-out infinite;
+}
+
+.orb-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid transparent;
+}
+
+.ring-1 {
+  border-color: rgba(184, 168, 120, 0.15);
+  animation: orbSpin1 8s linear infinite;
+}
+.ring-2 {
+  inset: 10px;
+  border-color: rgba(184, 168, 120, 0.1);
+  border-style: dashed;
+  animation: orbSpin2 12s linear infinite reverse;
+}
+.ring-3 {
+  inset: 22px;
+  border-color: rgba(184, 168, 120, 0.08);
+  animation: orbSpin1 16s linear infinite;
+}
+
+@keyframes orbSpin1 {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes orbSpin2 {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .loading-text {
   font-size: 16px;
   color: var(--text-secondary);
   font-weight: 300;
   font-style: italic;
-  transition: opacity 0.3s ease;
+}
+
+/* Loading message fade transition */
+.loading-fade-enter-active {
+  transition: all 0.6s ease;
+}
+.loading-fade-leave-active {
+  transition: all 0.4s ease;
+}
+.loading-fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.loading-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 
 /* ---- READING ---- */
@@ -875,13 +1038,33 @@ async function submitReading() {
   max-width: 780px;
 }
 
+.reset-link {
+  text-align: center;
+  margin-top: 55px;
+}
+.btn-reset {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-style: italic;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  padding: 10px 20px;
+  transition: color 0.3s ease;
+}
+.btn-reset:hover {
+  color: var(--text-secondary);
+}
+
 /* ---- FOCUS ---- */
 .btn-begin:focus-visible,
-.btn-reveal:focus-visible,
+.btn-cast:focus-visible,
 .btn-continue:focus-visible,
 .btn-back:focus-visible,
 .btn-add-book:focus-visible,
 .btn-retry:focus-visible,
+.btn-reset:focus-visible,
 .force-phrase:focus-visible,
 .book-input:focus-visible,
 .spell-break-input:focus-visible {
@@ -909,6 +1092,17 @@ async function submitReading() {
   .step-back-enter-active,
   .step-back-leave-active {
     transition: none !important;
+  }
+  .loading-fade-enter-active,
+  .loading-fade-leave-active {
+    transition: none !important;
+  }
+  .btn-cast.ready::before {
+    animation: none;
+    opacity: 0;
+  }
+  .cast-glow {
+    display: none;
   }
 }
 </style>
