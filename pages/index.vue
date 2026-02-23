@@ -469,14 +469,13 @@ async function submitReading() {
   letter-spacing: 0.3em;
 }
 .intro h1 {
-  font-size: 54px;
-  font-weight: 300;
-  font-style: italic;
+  font-size: 64px;
+  font-weight: 400;
   color: var(--text-primary);
   font-family: var(--font-serif);
-  letter-spacing: 0.02em;
-  margin-bottom: 24px;
-  line-height: 1.1;
+  letter-spacing: 0.01em;
+  margin-bottom: 28px;
+  line-height: 1.15;
 }
 .intro-sub {
   font-size: 19px;
@@ -682,7 +681,7 @@ async function submitReading() {
   border-radius: 20px;
   padding: 10px 22px;
   color: var(--text-secondary);
-  font-family: var(--font-serif, 'Cormorant', 'Cormorant Garamond', 'Georgia', serif);
+  font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
   font-size: 17px;
   font-weight: 400;
   font-style: italic;

@@ -278,11 +278,10 @@ async function sendEmail() {
 
 .posture-name {
   text-align: center;
-  font-family: var(--font-serif, 'Cormorant', 'Cormorant Garamond', 'Georgia', serif);
-  font-size: 24px;
+  font-family: var(--font-serif, 'Pinyon Script', cursive);
+  font-size: 28px;
   font-weight: 400;
-  font-style: italic;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.02em;
   color: var(--gold, #d0a060);
   margin-bottom: var(--sp-md);
 }
@@ -301,12 +300,11 @@ async function sendEmail() {
 /* ── Field Signature — HERO ── */
 .field-signature {
   text-align: center;
-  font-family: 'Cormorant', 'Cormorant Garamond', 'Georgia', serif;
-  font-size: 48px;
-  font-weight: 500;
-  font-style: italic;
-  letter-spacing: 0.02em;
-  line-height: 1.15;
+  font-family: 'Pinyon Script', cursive;
+  font-size: 56px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
   color: var(--gold-glow, #e8c888);
   text-shadow: 0 0 40px rgba(232,200,136,0.22), 0 0 80px rgba(232,200,136,0.08);
   margin-bottom: var(--sp-md);
@@ -402,11 +400,10 @@ async function sendEmail() {
 }
 
 .mark-text {
-  font-family: var(--font-serif, 'Cormorant', 'Cormorant Garamond', 'Georgia', serif);
-  font-size: 12px;
+  font-family: var(--font-serif, 'Pinyon Script', cursive);
+  font-size: 16px;
   font-weight: 400;
-  font-style: italic;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.08em;
   color: var(--gold-dim, #a08040);
 }
 
@@ -659,7 +656,7 @@ async function sendEmail() {
   }
 
   .field-signature {
-    font-size: 34px;
+    font-size: 38px;
   }
 
   .reading-text {

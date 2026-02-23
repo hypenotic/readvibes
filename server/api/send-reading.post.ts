@@ -76,7 +76,7 @@ export default defineEventHandler(async (event) => {
 
     <!-- Field Signature (hero) -->
     <div style="text-align: center; margin-bottom: 12px;">
-      <div style="font-size: 36px; font-weight: 500; font-style: italic; color: #e8c888; letter-spacing: 0.02em; line-height: 1.15; font-family: 'Cormorant', 'Cormorant Garamond', Georgia, serif;">
+      <div style="font-size: 36px; font-weight: 500; font-style: italic; color: #e8c888; letter-spacing: 0.02em; line-height: 1.15; font-family: 'Pinyon Script', cursive;">
         ${reading.fieldSignature}
       </div>
     </div>
