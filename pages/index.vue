@@ -20,7 +20,6 @@
     <!-- FORM STATE (step-by-step) -->
     <div v-if="step === 'form'" class="form-wrap">
       <div class="form-header">
-        <span class="form-label">Your Reading</span>
         <div class="form-divider"></div>
       </div>
 
@@ -40,7 +39,7 @@
         <!-- Step 0: Books -->
         <section v-if="formStep === 0" key="books" class="form-section" aria-labelledby="books-heading">
           <h2 id="books-heading">Books that have stayed with you</h2>
-          <p class="section-desc">Not the best. The ones that linger. Add at least three.</p>
+          <p class="section-desc">Not the best. The ones that linger. Three minimum — five or more is better.</p>
 
           <div class="book-inputs">
             <div v-for="(book, i) in books" :key="i" class="book-entry">
@@ -65,7 +64,7 @@
             class="btn-add-book"
             @click="addBook"
           >
-            + Add another book
+            + Add another book <span class="book-count-hint">({{ books.length }} of 10)</span>
           </button>
         </section>
 
@@ -265,11 +264,11 @@ const bookPlaceholders = [
   'The one you recommend to people',
   'A book you think about unexpectedly',
   'One that felt written for you',
-  'Another one that stayed',
-  'Another one that stayed',
-  'Another one that stayed',
-  'Another one that stayed',
-  'Another one that stayed',
+  'One you press into other people\'s hands',
+  'A book you return to in your head',
+  'One that rearranged something',
+  'The one nobody else seems to know',
+  'A book that still isn\'t finished with you',
 ]
 
 function getBookPlaceholder(i) {
@@ -528,13 +527,6 @@ async function submitReading() {
   text-align: center;
   margin-bottom: 32px;
 }
-.form-label {
-  font-size: 11px;
-  letter-spacing: 0.4em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  font-family: var(--font-system);
-}
 .form-divider {
   width: 40px;
   height: 1px;
@@ -644,6 +636,10 @@ async function submitReading() {
 }
 .btn-add-book:hover {
   color: var(--text-secondary);
+}
+.book-count-hint {
+  opacity: 0.6;
+  font-size: 12px;
 }
 
 /* Name field (step view) */

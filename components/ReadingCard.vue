@@ -21,6 +21,11 @@
           />
         </div>
 
+        <!-- Signal trace (decorative, top placement) -->
+        <div v-if="reading.signalTrace?.length" class="signal-trace enter-constellation" :class="{ 'pre-enter': !entered.constellation }">
+          {{ reading.signalTrace.join(' · ') }}
+        </div>
+
         <!-- Posture label -->
         <div class="posture-label enter-posture" :class="{ 'pre-enter': !entered.posture }">Your reading posture</div>
 
@@ -57,18 +62,13 @@
 
         <!-- Boundary -->
         <div class="boundary enter-boundary" :class="{ 'pre-enter': !entered.boundary }">
-          <div class="boundary-label">What tends not to hold you</div>
+          <div class="boundary-label">What breaks the spell</div>
           <p>{{ reading.boundary }}</p>
         </div>
 
         <!-- Book list -->
         <div class="enter-books" :class="{ 'pre-enter': !entered.books }">
           <BookList :books="reading.constellation" />
-        </div>
-
-        <!-- Signal trace -->
-        <div v-if="reading.signalTrace?.length" class="signal-trace enter-books" :class="{ 'pre-enter': !entered.books }">
-          {{ reading.signalTrace.join(' \u00B7 ') }}
         </div>
 
         <!-- Mark -->
@@ -94,6 +94,10 @@
 
     <Transition name="recs-reveal">
       <div v-if="showRecs" id="recommendations-panel" class="recs">
+        <div v-if="reading.recsFooter" class="recs-footer">
+          <p>{{ reading.recsFooter }}</p>
+        </div>
+
         <ol class="recs-list">
           <li v-for="(rec, i) in reading.recommendations" :key="i" class="rec-item">
             <div class="rec-header">
@@ -107,37 +111,33 @@
           </li>
         </ol>
 
-        <div class="recs-footer">
-          <p>{{ reading.recsFooter }}</p>
+        <!-- Email Reading (inside recs, so it appears after recommendations) -->
+        <div class="email-section">
+          <div v-if="!emailSent" class="email-form">
+            <p class="email-prompt">Keep a copy of your Reading?</p>
+            <div class="email-row">
+              <input
+                v-model="email"
+                type="email"
+                placeholder="your@email.com"
+                class="email-input"
+                aria-label="Email address"
+                @keyup.enter="sendEmail"
+              />
+              <button
+                class="email-btn"
+                :disabled="!email.trim() || emailSending"
+                @click="sendEmail"
+              >
+                {{ emailSending ? 'Sending...' : 'Send' }}
+              </button>
+            </div>
+            <p v-if="emailError" class="email-error" role="alert">{{ emailError }}</p>
+          </div>
+          <p v-else class="email-sent">Sent. Check your inbox.</p>
         </div>
       </div>
     </Transition>
-
-    <!-- Email Reading -->
-    <div class="email-section">
-      <div v-if="!emailSent" class="email-form">
-        <p class="email-prompt">Keep a copy of your Reading?</p>
-        <div class="email-row">
-          <input
-            v-model="email"
-            type="email"
-            placeholder="your@email.com"
-            class="email-input"
-            aria-label="Email address"
-            @keyup.enter="sendEmail"
-          />
-          <button
-            class="email-btn"
-            :disabled="!email.trim() || emailSending"
-            @click="sendEmail"
-          >
-            {{ emailSending ? 'Sending...' : 'Send' }}
-          </button>
-        </div>
-        <p v-if="emailError" class="email-error" role="alert">{{ emailError }}</p>
-      </div>
-      <p v-else class="email-sent">Sent. Check your inbox.</p>
-    </div>
   </article>
 </template>
 
@@ -274,7 +274,7 @@ async function sendEmail() {
   letter-spacing: 0.5em;
   text-transform: uppercase;
   color: var(--cream-ghost, #887868);
-  margin-bottom: var(--sp-sm);
+  margin-bottom: var(--sp-md);
 }
 
 .posture-name {
@@ -285,7 +285,7 @@ async function sendEmail() {
   font-style: italic;
   letter-spacing: 0.05em;
   color: var(--gold, #d0a060);
-  margin-bottom: var(--sp-sm);
+  margin-bottom: var(--sp-md);
 }
 
 .posture-definition {
@@ -295,7 +295,7 @@ async function sendEmail() {
   font-weight: 300;
   font-style: italic;
   color: var(--cream-dim, #a89878);
-  margin-bottom: var(--sp-lg);
+  margin-bottom: var(--sp-xl);
   line-height: 1.75;
 }
 
@@ -411,15 +411,17 @@ async function sendEmail() {
   color: var(--gold-dim, #a08040);
 }
 
-/* ── Signal trace ── */
+/* ── Signal trace (decorative, top placement) ── */
 .signal-trace {
   text-align: center;
   font-family: var(--font-label, 'Spectral', 'Georgia', serif);
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 300;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   color: var(--cream-ghost, #887868);
-  margin-top: var(--sp-md);
+  opacity: 0.5;
+  margin-bottom: var(--sp-lg);
 }
 
 /* ── Recommendations ── */
@@ -504,9 +506,9 @@ async function sendEmail() {
 
 .recs-footer {
   text-align: center;
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid var(--gold-ink, #3a2a14);
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--gold-ink, #3a2a14);
 }
 
 .recs-footer p {
@@ -528,7 +530,9 @@ async function sendEmail() {
 
 /* ── Email section ── */
 .email-section {
-  margin-top: var(--sp-xl, 55px);
+  margin-top: var(--sp-lg, 34px);
+  padding-top: var(--sp-lg, 34px);
+  border-top: 1px solid var(--gold-ink, #3a2a14);
   text-align: center;
 }
 
