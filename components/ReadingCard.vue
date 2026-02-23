@@ -267,7 +267,7 @@ async function sendEmail() {
 /* ── Posture ── */
 .posture-label {
   text-align: center;
-  font-family: var(--font-label, 'Spectral', 'Georgia', serif);
+  font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
   font-size: 11px;
   font-weight: 200;
   letter-spacing: 0.5em;
@@ -289,7 +289,7 @@ async function sendEmail() {
 
 .posture-definition {
   text-align: center;
-  font-family: var(--font-label, 'Spectral', 'Georgia', serif);
+  font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
   font-size: 16px;
   font-weight: 300;
   font-style: italic;
@@ -315,7 +315,7 @@ async function sendEmail() {
 /* ── Reader info ── */
 .reader-info {
   text-align: center;
-  font-family: var(--font-label, 'Spectral', 'Georgia', serif);
+  font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
   font-size: 11px;
   font-weight: 200;
   letter-spacing: 0.3em;
@@ -333,7 +333,7 @@ async function sendEmail() {
 
 /* ── Reading text ── */
 .reading-text {
-  font-family: var(--font-label, 'Spectral', 'Georgia', serif);
+  font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
   font-size: 20px;
   font-weight: 300;
   line-height: 2.05;
@@ -363,7 +363,7 @@ async function sendEmail() {
 }
 
 .boundary-label {
-  font-family: var(--font-label, 'Spectral', 'Georgia', serif);
+  font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
   font-size: 13px;
   font-weight: 300;
   font-style: italic;
@@ -373,7 +373,7 @@ async function sendEmail() {
 }
 
 .boundary p {
-  font-family: var(--font-label, 'Spectral', 'Georgia', serif);
+  font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
   font-size: 18px;
   font-weight: 300;
   font-style: italic;
@@ -413,7 +413,7 @@ async function sendEmail() {
 /* ── Signal trace (decorative, top placement) ── */
 .signal-trace {
   text-align: center;
-  font-family: var(--font-label, 'Spectral', 'Georgia', serif);
+  font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
   font-size: 11px;
   font-weight: 300;
   letter-spacing: 0.18em;
@@ -438,7 +438,7 @@ async function sendEmail() {
   font-size: 12px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  font-family: var(--font-label, 'Spectral', 'Georgia', serif);
+  font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -479,7 +479,7 @@ async function sendEmail() {
 .rec-num {
   font-size: 10px;
   color: var(--gold-dark, #6a5428);
-  font-family: var(--font-label, 'Spectral', 'Georgia', serif);
+  font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
   min-width: 16px;
 }
 
@@ -578,7 +578,7 @@ async function sendEmail() {
   font-size: 12px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  font-family: var(--font-label, 'Spectral', 'Georgia', serif);
+  font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;

@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
   const temporalMarker = reading.temporalMarker || ''
   const readerLine = [readerName, temporalMarker].filter(Boolean).join(' \u00B7 ')
 
-  const paragraphs = (reading.paragraphs || []).map((p: string) => `<p style="margin: 0 0 14px; line-height: 1.9; font-family: 'Spectral', Georgia, serif;">${p}</p>`).join('')
+  const paragraphs = (reading.paragraphs || []).map((p: string) => `<p style="margin: 0 0 14px; line-height: 1.9; font-family: 'Source Serif 4', Georgia, serif;">${p}</p>`).join('')
   const constellation = (reading.constellation || []).map((b: any) => {
     const title = typeof b === 'string' ? b : b?.title || ''
     return `<span style="display: inline-block; font-size: 12px; color: #9ea6b8; padding: 3px 10px; border: 1px solid #2a2f3a; border-radius: 14px; font-style: italic; margin: 2px;">${title}</span>`
@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
           <span style="font-size: 17px; color: #b8a878; margin-left: 10px;">${rec.title}</span>
           <span style="font-size: 13px; color: #9ea6b8; margin-left: 8px;">\u2014 ${rec.author}</span>
         </div>
-        <p style="margin: 0 0 0 26px; font-size: 14px; line-height: 1.65; color: #9ea6b8; font-family: 'Spectral', Georgia, serif;">${rec.note}</p>
+        <p style="margin: 0 0 0 26px; font-size: 14px; line-height: 1.65; color: #9ea6b8; font-family: 'Source Serif 4', Georgia, serif;">${rec.note}</p>
       </div>`
   }).join('')
 
@@ -70,7 +70,7 @@ export default defineEventHandler(async (event) => {
 
     <!-- Posture definition -->
     ${reading.postureDefinition ? `
-    <div style="text-align: center; margin-bottom: 24px; font-size: 14px; color: #887868; font-style: italic; font-family: 'Spectral', Georgia, serif;">
+    <div style="text-align: center; margin-bottom: 24px; font-size: 14px; color: #887868; font-style: italic; font-family: 'Source Serif 4', Georgia, serif;">
       ${reading.postureDefinition}
     </div>` : ''}
 
@@ -83,7 +83,7 @@ export default defineEventHandler(async (event) => {
 
     <!-- Reader info + temporal marker -->
     ${readerLine ? `
-    <div style="text-align: center; margin-bottom: 24px; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #9ea6b8; font-family: 'Spectral', Georgia, serif;">
+    <div style="text-align: center; margin-bottom: 24px; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #9ea6b8; font-family: 'Source Serif 4', Georgia, serif;">
       ${readerLine}
     </div>` : ''}
 
@@ -97,8 +97,8 @@ export default defineEventHandler(async (event) => {
 
     <!-- Boundary -->
     <div style="border-top: 1px solid #2a2f3a; padding-top: 20px; margin-bottom: 26px;">
-      <div style="font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #887868; margin-bottom: 8px; font-family: Georgia, serif;">What tends not to hold you</div>
-      <p style="font-size: 15px; line-height: 1.7; color: #c8b898; font-weight: 300; margin: 0; font-family: 'Spectral', Georgia, serif;">
+      <div style="font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #887868; margin-bottom: 8px; font-family: Georgia, serif;">What breaks the spell</div>
+      <p style="font-size: 15px; line-height: 1.7; color: #c8b898; font-weight: 300; margin: 0; font-family: 'Source Serif 4', Georgia, serif;">
         ${reading.boundary}
       </p>
     </div>
@@ -111,7 +111,7 @@ export default defineEventHandler(async (event) => {
 
     <!-- Signal trace -->
     ${signalTrace ? `
-    <div style="text-align: center; margin-bottom: 24px; font-size: 11px; letter-spacing: 0.12em; color: #887868; font-family: 'Spectral', Georgia, serif;">
+    <div style="text-align: center; margin-bottom: 24px; font-size: 11px; letter-spacing: 0.12em; color: #887868; font-family: 'Source Serif 4', Georgia, serif;">
       ${signalTrace}
     </div>` : ''}
 
@@ -131,7 +131,7 @@ export default defineEventHandler(async (event) => {
       ${recs}
       ${reading.recsFooter ? `
       <div style="text-align: center; padding-top: 16px; border-top: 1px solid #1a1c20;">
-        <p style="font-size: 12.5px; line-height: 1.7; color: #4a5268; font-style: italic; margin: 0; font-family: 'Spectral', Georgia, serif;">
+        <p style="font-size: 12.5px; line-height: 1.7; color: #4a5268; font-style: italic; margin: 0; font-family: 'Source Serif 4', Georgia, serif;">
           ${reading.recsFooter}
         </p>
       </div>` : ''}

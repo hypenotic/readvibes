@@ -769,7 +769,7 @@ async function submitReading() {
   font-size: 16px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  font-family: var(--font-label, 'Spectral', 'Georgia', serif);
+  font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
   cursor: pointer;
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
