@@ -105,7 +105,17 @@
                 <span class="rec-author">&mdash; {{ rec.author }}</span>
               </div>
             </div>
-            <p class="rec-note">{{ rec.note }}</p>
+            <button
+              type="button"
+              class="rec-why"
+              :aria-expanded="expandedRecs.includes(i)"
+              @click="toggleRecNote(i)"
+            >
+              {{ expandedRecs.includes(i) ? 'Less' : 'Why this?' }}
+            </button>
+            <Transition name="rec-note-reveal">
+              <p v-if="expandedRecs.includes(i)" class="rec-note">{{ rec.note }}</p>
+            </Transition>
           </li>
         </ol>
 
@@ -165,7 +175,16 @@ const { entered } = useEntranceAnimation()
 
 // UI state
 const showRecs = ref(false)
+const expandedRecs = ref([])
 const numerals = ['I', 'II', 'III', 'IV', 'V']
+
+function toggleRecNote(index) {
+  if (expandedRecs.value.includes(index)) {
+    expandedRecs.value = expandedRecs.value.filter(i => i !== index)
+  } else {
+    expandedRecs.value = [...expandedRecs.value, index]
+  }
+}
 
 // Display name
 const displayName = computed(() => props.reading.readerName || '')
@@ -492,12 +511,45 @@ async function sendEmail() {
   margin-left: 8px;
 }
 
+.rec-why {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 6px 0 0 26px;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--cream-ghost, #887868);
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  transition: color 0.2s ease;
+}
+
+.rec-why:hover {
+  color: var(--cream-dim, #a89878);
+}
+
 .rec-note {
-  margin: 0 0 0 26px;
+  margin: 8px 0 0 26px;
   font-size: 16px;
   line-height: 1.8;
   color: var(--cream-dim, #a89878);
   font-weight: 300;
+}
+
+/* Rec note reveal transition */
+.rec-note-reveal-enter-active {
+  transition: all 0.35s ease;
+}
+.rec-note-reveal-leave-active {
+  transition: all 0.25s ease;
+}
+.rec-note-reveal-enter-from {
+  opacity: 0;
+  transform: translateY(-4px);
+  max-height: 0;
+}
+.rec-note-reveal-leave-to {
+  opacity: 0;
 }
 
 .recs-footer {
@@ -518,6 +570,7 @@ async function sendEmail() {
 
 /* ── Focus ── */
 .recs-toggle button:focus-visible,
+.rec-why:focus-visible,
 .email-btn:focus-visible,
 .email-input:focus-visible {
   outline: 2px solid var(--gold, #d0a060);

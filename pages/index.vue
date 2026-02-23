@@ -120,7 +120,7 @@
               v-model="spellBreak"
               type="text"
               maxlength="300"
-              placeholder="When a book…"
+              :placeholder="spellBreakPlaceholder"
               class="book-input spell-break-input"
               aria-label="What breaks the spell"
               @keydown.enter.prevent="canSubmit ? submitReading() : null"
@@ -239,6 +239,51 @@ const forcesError = ref('')
 
 // Spell break state
 const spellBreak = ref('')
+
+// Rotating spell break placeholders
+const spellBreakPlaceholders = [
+  'Too much history I don\u2019t know\u2026',
+  'Characters I can\u2019t tell apart\u2026',
+  'When it explains its own metaphors\u2026',
+  'When I can feel the author trying\u2026',
+  'A map on the first page\u2026',
+]
+const spellBreakPlaceholderIndex = ref(0)
+const spellBreakPlaceholder = computed(() => spellBreakPlaceholders[spellBreakPlaceholderIndex.value])
+
+let placeholderInterval = null
+
+function startPlaceholderCycle() {
+  if (placeholderInterval) clearInterval(placeholderInterval)
+  spellBreakPlaceholderIndex.value = 0
+  placeholderInterval = setInterval(() => {
+    spellBreakPlaceholderIndex.value = (spellBreakPlaceholderIndex.value + 1) % spellBreakPlaceholders.length
+  }, 3000)
+}
+
+function stopPlaceholderCycle() {
+  if (placeholderInterval) {
+    clearInterval(placeholderInterval)
+    placeholderInterval = null
+  }
+}
+
+watch(() => formStep.value, (newStep) => {
+  if (formSteps[newStep] === 'spellbreak' && !spellBreak.value) {
+    startPlaceholderCycle()
+  } else {
+    stopPlaceholderCycle()
+  }
+})
+
+// Stop cycling once user starts typing
+watch(spellBreak, (val) => {
+  if (val) stopPlaceholderCycle()
+})
+
+onUnmounted(() => {
+  stopPlaceholderCycle()
+})
 
 // Focus management on form step transitions
 watch(() => formStep.value, async () => {
@@ -733,6 +778,9 @@ async function submitReading() {
 .spell-break-input {
   width: 100%;
   border-bottom: 1px solid var(--border-light);
+}
+.spell-break-input::placeholder {
+  transition: opacity 0.4s ease;
 }
 
 /* ---- CAST BUTTON — THE CLIMAX ---- */

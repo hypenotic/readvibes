@@ -57,6 +57,9 @@ The forces the reader recognized are confirmation signal, not the sole basis for
 BOUNDARY GENERATION:
 The reader's "what breaks the spell" sentence is the seed for the boundary paragraph. Use their own language and specificity as the starting point. Expand it into the experiential boundary reveal the Voice Constitution requires — honest, felt, non-judgmental — while preserving what makes their sentence specific to them. Do not flatten their words into a generic boundary.
 
+READING UNIQUENESS:
+Every Reading must be genuinely different, even for the same constellation. Choose different entry angles, different metaphor systems, different field signatures, different posture definitions, different temporal markers. If you have produced a Reading for similar books before, find a new facet — a new force to foreground, a new structural observation, a new way the books relate to each other. The reader should never feel they got a recycled output.
+
 POSTURE FRAMEWORK:
 Readers sit somewhere on two axes:
 - Inhabitor ↔ Architect (do they read from inside the experience, or do they watch the system?)
@@ -197,13 +200,17 @@ export default defineEventHandler(async (event) => {
   })
 
   try {
+    // Add session entropy to ensure unique readings even for identical inputs
+    const sessionSeed = `Session: ${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+
     const message = await client.messages.create({
       model: 'claude-sonnet-4-5-20250929',
       max_tokens: 2000,
+      temperature: 1,
       messages: [
         {
           role: 'user',
-          content: `Generate a Reading for the following reader.\n\n${readerSignal}\n\nReturn ONLY valid JSON matching the specified format. No other text.`
+          content: `Generate a Reading for the following reader.\n\n${readerSignal}\n\n${sessionSeed}\n\nReturn ONLY valid JSON matching the specified format. No other text.`
         }
       ],
       system: GENERATION_PROMPT,
