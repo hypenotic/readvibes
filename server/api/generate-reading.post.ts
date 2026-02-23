@@ -19,6 +19,7 @@ VOICE RULES (non-negotiable):
 - The field signature is 3-6 words. A compression. It should feel like a motto they didn't know they had.
 - Posture definition must be a single sentence, in second person, immediately recognizable. (e.g., "You stay inside the book's world longer than the plot requires.")
 - Recommendations must NOT include books the reader already named. Each rec note should explain WHY this book matches this specific reader's posture — not just describe the book.
+- Each recommendation must include the publication year (first edition). Use the original publication year, not a reprint or anniversary edition year.
 - At most one "not X but Y" contrast construction per paragraph. Don't force it.
 - One reframing sentence per Reading: names a familiar reading experience in language the reader has never encountered. This is the screenshot sentence.
 - Maximum four sentences per paragraph.
@@ -127,6 +128,7 @@ Return valid JSON only. No markdown, no backticks, no preamble. The JSON must ma
     {
       "title": "Book Title",
       "author": "Author Name",
+      "year": 1999,
       "note": "2-3 sentences explaining why this book matches THIS reader's specific posture"
     }
   ],

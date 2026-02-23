@@ -1,5 +1,27 @@
+/**
+ * EMAIL DELIVERY SETUP — READ BEFORE DEPLOYING
+ * ─────────────────────────────────────────────
+ * The Resend sandbox sender (onboarding@resend.dev) only delivers to the
+ * Resend account owner's email. To send to real users you MUST:
+ *
+ *   1. Buy / own a domain (e.g. readfortune.es)
+ *   2. In Resend dashboard → Domains → Add Domain
+ *   3. Add the DNS records Resend gives you (MX, TXT/SPF, DKIM)
+ *   4. Wait for verification (usually < 5 min)
+ *   5. Set the env var:  RESEND_FROM_EMAIL=Read Fortunes <hello@readfortune.es>
+ *
+ * Until step 5 is done, emails will only reach the account owner.
+ * The code below falls back to onboarding@resend.dev so dev/testing still works.
+ */
+
 import { Resend } from 'resend'
 import { checkRateLimit } from '../utils/rateLimit'
+
+/** Minimal shape of the Resend send response */
+interface ResendSendResponse {
+  data: { id: string } | null
+  error: { message: string; name: string } | null
+}
 
 export default defineEventHandler(async (event) => {
   // Rate limit: 10 emails per IP per hour
@@ -13,7 +35,7 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const body = await readBody(event)
 
-  // Validate
+  // ── Validate inputs ──────────────────────────────────────────────────
   if (!body?.email || !body?.reading) {
     throw createError({ statusCode: 400, statusMessage: 'Email and reading data are required' })
   }
@@ -23,9 +45,27 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Invalid email address' })
   }
 
+  // ── Check API key is configured ──────────────────────────────────────
+  if (!config.resendApiKey) {
+    console.error('[send-reading] RESEND_API_KEY is not set')
+    throw createError({ statusCode: 500, statusMessage: 'Email service is not configured' })
+  }
+
   const { email, reading } = body
   const resend = new Resend(config.resendApiKey)
 
+  // ── Resolve sender address ───────────────────────────────────────────
+  const fromAddress = config.resendFromEmail || 'Read Fortunes <onboarding@resend.dev>'
+
+  if (!config.resendFromEmail) {
+    console.warn(
+      '[send-reading] RESEND_FROM_EMAIL is not set — using sandbox sender.',
+      'Emails will only be delivered to the Resend account owner.',
+      'See the comment at the top of this file for setup instructions.'
+    )
+  }
+
+  // ── Build HTML ───────────────────────────────────────────────────────
   const readerName = reading.readerName || ''
   const temporalMarker = reading.temporalMarker || ''
   const readerLine = [readerName, temporalMarker].filter(Boolean).join(' \u00B7 ')
@@ -141,21 +181,47 @@ export default defineEventHandler(async (event) => {
 </body>
 </html>`
 
+  // ── Send via Resend ──────────────────────────────────────────────────
   try {
-    await resend.emails.send({
-      // TODO: Update to hello@readfortune.es once domain is verified with Resend
-      from: 'Read Fortunes <onboarding@resend.dev>',
+    const response = await resend.emails.send({
+      from: fromAddress,
       to: email,
       subject: `Your Reading${reading.readerName ? `, ${reading.readerName}` : ''}`,
       html,
-    })
+    }) as ResendSendResponse
 
-    return { success: true }
-  } catch (err) {
-    console.error('Email send failed:', err)
+    // Resend SDK returns { data, error } instead of throwing on API errors.
+    // We must check `error` explicitly — otherwise the endpoint reports
+    // success even when Resend rejected the request (wrong sender, etc).
+    if (response.error) {
+      console.error('[send-reading] Resend API error:', JSON.stringify(response.error))
+      throw createError({
+        statusCode: 502,
+        statusMessage: `Email provider error: ${response.error.message}`,
+      })
+    }
+
+    if (!response.data?.id) {
+      console.error('[send-reading] Resend returned no email ID — unexpected response:', JSON.stringify(response))
+      throw createError({
+        statusCode: 502,
+        statusMessage: 'Email provider returned an unexpected response',
+      })
+    }
+
+    console.log(`[send-reading] Email sent successfully — id: ${response.data.id}, to: ${email}`)
+    return { success: true, emailId: response.data.id }
+  } catch (err: any) {
+    // Re-throw errors we already created above (they have statusCode set)
+    if (err?.statusCode) {
+      throw err
+    }
+
+    // Unexpected / network errors
+    console.error('[send-reading] Unexpected email send failure:', err?.message || err)
     throw createError({
       statusCode: 500,
-      statusMessage: 'Failed to send email',
+      statusMessage: 'Failed to send email. Please try again or copy your reading instead.',
     })
   }
 })

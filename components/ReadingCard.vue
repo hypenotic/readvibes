@@ -102,7 +102,7 @@
               <span class="rec-num" aria-hidden="true">{{ numerals[i] }}</span>
               <div>
                 <span class="rec-title">{{ rec.title }}</span>
-                <span class="rec-author">&mdash; {{ rec.author }}</span>
+                <span class="rec-author">&mdash; {{ rec.author }}<span v-if="rec.year" class="rec-year"> ({{ rec.year }})</span></span>
               </div>
             </div>
             <button
@@ -143,9 +143,13 @@
             {{ emailSending ? 'Sending...' : 'Send' }}
           </button>
         </div>
+        <p class="email-privacy">Your email isn't stored. We just send this once.</p>
         <p v-if="emailError" class="email-error" role="alert">{{ emailError }}</p>
       </div>
-      <p v-else class="email-sent">Sent. Check your inbox.</p>
+      <div v-else class="email-success">
+        <p class="email-sent-icon" aria-hidden="true">&#10003;</p>
+        <p class="email-sent-msg">Your Reading is traveling. Check your inbox — and maybe spam, just in case.</p>
+      </div>
     </div>
   </article>
 </template>
@@ -287,33 +291,34 @@ async function sendEmail() {
 .posture-label {
   text-align: center;
   font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
-  font-size: 11px;
-  font-weight: 200;
-  letter-spacing: 0.5em;
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0.4em;
   text-transform: uppercase;
-  color: var(--cream-ghost, #887868);
-  margin-bottom: var(--sp-md);
+  color: var(--cream-dim, #a89878);
+  margin-bottom: var(--sp-sm);
 }
 
 .posture-name {
   text-align: center;
   font-family: var(--font-serif, 'Pinyon Script', cursive);
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 400;
   letter-spacing: 0.02em;
   color: var(--gold, #d0a060);
-  margin-bottom: var(--sp-md);
+  text-shadow: 0 0 24px rgba(208,160,96,0.15);
+  margin-bottom: var(--sp-sm);
 }
 
 .posture-definition {
   text-align: center;
   font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
-  font-size: 16px;
-  font-weight: 300;
+  font-size: 1.05rem;
+  font-weight: 400;
   font-style: italic;
-  color: var(--cream-dim, #a89878);
+  color: var(--cream-mid, #d8c8a8);
   margin-bottom: var(--sp-xl);
-  line-height: 1.75;
+  line-height: 1.7;
 }
 
 /* ── Field Signature — HERO ── */
@@ -333,7 +338,7 @@ async function sendEmail() {
 .reader-info {
   text-align: center;
   font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
-  font-size: 11px;
+  font-size: 0.8rem;
   font-weight: 200;
   letter-spacing: 0.3em;
   text-transform: uppercase;
@@ -351,9 +356,9 @@ async function sendEmail() {
 /* ── Reading text ── */
 .reading-text {
   font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 300;
-  line-height: 2.05;
+  line-height: 1.7;
   color: var(--cream-mid, #d8c8a8);
   margin-bottom: var(--sp-lg);
 }
@@ -381,7 +386,7 @@ async function sendEmail() {
 
 .boundary-label {
   font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
-  font-size: 13px;
+  font-size: 0.9rem;
   font-weight: 300;
   font-style: italic;
   letter-spacing: 0.06em;
@@ -391,10 +396,10 @@ async function sendEmail() {
 
 .boundary p {
   font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
-  font-size: 18px;
+  font-size: 1.15rem;
   font-weight: 300;
   font-style: italic;
-  line-height: 2.0;
+  line-height: 1.7;
   color: var(--cream-bnd, #c8b898);
   margin: 0;
 }
@@ -430,7 +435,7 @@ async function sendEmail() {
 .signal-trace {
   text-align: center;
   font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
-  font-size: 11px;
+  font-size: 0.75rem;
   font-weight: 300;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -449,9 +454,9 @@ async function sendEmail() {
   background: none;
   border: 1px solid var(--gold-dark, #6a5428);
   border-radius: 4px;
-  padding: 11px 26px;
+  padding: 12px 28px;
   color: var(--cream-dim, #a89878);
-  font-size: 12px;
+  font-size: 0.85rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
@@ -493,22 +498,27 @@ async function sendEmail() {
 }
 
 .rec-num {
-  font-size: 10px;
+  font-size: 0.75rem;
   color: var(--gold-dark, #6a5428);
   font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
   min-width: 16px;
 }
 
 .rec-title {
-  font-size: 19px;
+  font-size: 1.2rem;
   color: var(--gold, #d0a060);
   font-weight: 400;
 }
 
 .rec-author {
-  font-size: 14px;
+  font-size: 0.95rem;
   color: var(--cream-dim, #a89878);
   margin-left: 8px;
+}
+
+.rec-year {
+  font-size: 0.85rem;
+  color: var(--cream-ghost, #887868);
 }
 
 .rec-why {
@@ -516,7 +526,7 @@ async function sendEmail() {
   border: none;
   padding: 0;
   margin: 6px 0 0 26px;
-  font-size: 12px;
+  font-size: 0.85rem;
   font-style: italic;
   color: var(--cream-ghost, #887868);
   cursor: pointer;
@@ -530,8 +540,8 @@ async function sendEmail() {
 
 .rec-note {
   margin: 8px 0 0 26px;
-  font-size: 16px;
-  line-height: 1.8;
+  font-size: 1.05rem;
+  line-height: 1.7;
   color: var(--cream-dim, #a89878);
   font-weight: 300;
 }
@@ -560,8 +570,8 @@ async function sendEmail() {
 }
 
 .recs-footer p {
-  font-size: 14px;
-  line-height: 1.8;
+  font-size: 0.95rem;
+  line-height: 1.7;
   color: var(--cream-ghost, #887868);
   font-style: italic;
   max-width: 420px;
@@ -584,7 +594,7 @@ async function sendEmail() {
 }
 
 .email-prompt {
-  font-size: 13px;
+  font-size: 0.95rem;
   color: var(--cream-dim, #a89878);
   margin-bottom: 12px;
   letter-spacing: 0.05em;
@@ -603,7 +613,7 @@ async function sendEmail() {
   border: 1px solid var(--gold-dark, #6a5428);
   border-radius: 4px;
   padding: 10px 14px;
-  font-size: 14px;
+  font-size: 1rem;
   color: var(--cream-mid, #d8c8a8);
   font-family: inherit;
   outline: none;
@@ -625,7 +635,7 @@ async function sendEmail() {
   border-radius: 4px;
   padding: 10px 20px;
   color: var(--cream-dim, #a89878);
-  font-size: 12px;
+  font-size: 0.85rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
@@ -644,18 +654,49 @@ async function sendEmail() {
   cursor: not-allowed;
 }
 
+.email-privacy {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: var(--cream-ghost, #887868);
+  font-style: italic;
+  letter-spacing: 0.02em;
+}
+
 .email-error {
   margin-top: 8px;
-  font-size: 12px;
+  font-size: 0.9rem;
   color: var(--cream-dim, #a89878);
   font-style: italic;
 }
 
-.email-sent {
-  font-size: 13px;
-  color: var(--cream-dim, #a89878);
+.email-success {
+  animation: emailSuccessFadeIn 0.6s ease both;
+}
+
+.email-sent-icon {
+  font-size: 28px;
+  color: var(--gold, #d0a060);
+  margin-bottom: 6px;
+  text-shadow: 0 0 18px rgba(208,160,96,0.3);
+}
+
+.email-sent-msg {
+  font-size: 0.95rem;
+  color: var(--cream-mid, #d8c8a8);
   font-style: italic;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.03em;
+  line-height: 1.6;
+}
+
+@keyframes emailSuccessFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── Entrance animation classes ── */
@@ -713,12 +754,12 @@ async function sendEmail() {
   }
 
   .reading-text {
-    font-size: 18px;
-    line-height: 2.0;
+    font-size: 1.1rem;
+    line-height: 1.65;
   }
 
   .boundary p {
-    font-size: 16px;
+    font-size: 1.05rem;
   }
 }
 

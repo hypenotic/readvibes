@@ -35,7 +35,7 @@ function getTitle(book) {
 
 .book-list-label {
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 0.9rem;
   font-weight: 400;
   font-style: italic;
   letter-spacing: 0.06em;
@@ -73,7 +73,7 @@ function getTitle(book) {
 .book-title {
   flex: 1;
   font-family: var(--font-body);
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 400;
   font-style: italic;
   color: var(--cream-mid);

@@ -43,6 +43,22 @@ BAD: "structural vulnerability beneath performance" — dissertation language
 GOOD: "when the voice is dry but the feeling isn't" — you know this immediately
 BAD: "tonal irony masking affective depth" — same thing, unrecognizable
 
+THIN SIGNAL — FEW BOOKS OR SAME-SERIES CLUSTERS:
+When the constellation has few books (3-4), or multiple books from the same series/author, THE MOST IMPORTANT RULE is: abstract UP, never DOWN.
+- With thin signal, the temptation is to describe what happens in those specific books. RESIST THIS COMPLETELY.
+- Forces should describe narrative TEXTURES and modes of attention — the quality of engagement the reader is drawn to — never plot points, character types, or story summaries.
+- Ask: what KIND of reading experience do these books share? What mode of attention do they reward? What is the reader DOING while reading — not what is the character doing in the story?
+- If you catch yourself naming something that happens in the plot, zoom out to the reading experience that plot element creates.
+  BAD: "violence is the cost of change" — this is a plot theme, not a reading texture
+  GOOD: "pressure that reveals who people become" — this names what the reader is watching for
+  BAD: "underdogs" — this is a character trope
+  GOOD: "competence earned without permission" — this names a felt reading quality
+  BAD: "earning respect from the hostile" — this summarizes a story arc
+  GOOD: "people proving themselves in rooms that don't want them" — this names what the reader is drawn to
+  BAD: "rebellion against tyranny" — plot synopsis
+  GOOD: "when the rules are wrong and someone knows it" — felt experience
+- With thin signal, cast a WIDER net: what broader reading patterns might lead someone to these books? What adjacent textures might also be active? Generate forces that a reader of these books would recognize even if the forces don't literally describe those specific books.
+
 DO NOT RETURN:
 - Book jacket language ("a life in full," "rooms you can live in")
 - Academic or mechanical terms ("escalation," "retrospection," "emotional modulation," "diegetic," "epistemic")
@@ -50,9 +66,19 @@ DO NOT RETURN:
 - Phrases built from [abstract noun] + [preposition] + [abstract noun] — this pattern almost always fails the one-second test
 - Genre labels ("literary fiction," "hard sci-fi," "memoir")
 - Trope names ("the chosen one," "the heist," "enemies to lovers")
+- Plot descriptions, story summaries, or character descriptions disguised as forces — if it describes what happens in the book rather than how it feels to read the book, CUT IT
 - Phrases that sound like Reading paragraph output ("the voice stays level," "you stay for what settles")
 - Anything that sounds like a conference paper title or a blurb pull-quote
 - Anything that needs a tooltip, a re-read, or a moment of "wait, what?"
+
+TONE AND TEMPERATURE:
+- Forces should feel warm and recognizable — a reader should NOD, not squint.
+- Prefer warmth and recognition over intensity and provocation. You're describing what someone loves about reading, not writing a warning label.
+- Avoid violence, harm, or disturbing imagery unless the books overwhelmingly demand it. Even then, soften: "when the cost is real" not "watching the system eat people."
+- Avoid "impossible," "relentless," "brutal," "devastating" — these are blurb words, not recognition words. Use grounded, human-scale language.
+- Each force should feel like something you'd say to a friend: "oh, you like books where..." not like an academic paper title or a therapy session.
+- 4-7 words each. Plain but resonant language. If it sounds like a tweet, a thesis, or a trauma response, rewrite it.
+- The test: would a person smile or nod when they read this? Or would they furrow their brow? Forces should produce nods.
 
 REGISTER:
 Write these phrases the way a perceptive friend talks about books at dinner — specific, unhesitating, plain. Not the way a critic writes about books in a review. The difference is mouth-feel: recognition phrases should feel like speech, not text.

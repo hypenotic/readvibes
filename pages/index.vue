@@ -7,7 +7,7 @@
     <div v-if="step === 'intro'" class="intro">
       <div class="intro-glyph" aria-hidden="true">◈</div>
       <h1>Read Fortunes</h1>
-      <p class="intro-sub">Uncover the forces currently working on you.<br>Then let them lead you to what's next.</p>
+      <p class="intro-sub">Name what pulls you toward certain books.<br>Then let it guide you to what's next.</p>
       <div class="intro-divider" aria-hidden="true">
         <span class="line"></span>
         <span class="dot"></span>
@@ -58,6 +58,41 @@
           >
             + Add another book <span class="book-count-hint">({{ books.length }} of 10)</span>
           </button>
+
+          <!-- Open-ended book entries — appear once 3+ prompted books are filled -->
+          <div v-if="filledBookCount >= 3" class="open-books-section">
+            <p class="open-books-label">Or just... one more, for any reason.</p>
+            <div v-for="(book, j) in openBooks" :key="'open-' + j" class="book-entry">
+              <div class="book-row">
+                <span class="book-num open-book-num" aria-hidden="true">+</span>
+                <input
+                  :id="'open-book-' + j"
+                  v-model="openBooks[j].title"
+                  type="text"
+                  placeholder="A book. No reason needed."
+                  :aria-label="'Open book ' + (j + 1)"
+                  class="book-input"
+                  @keydown.enter.prevent="handleOpenBookEnter(j)"
+                />
+              </div>
+            </div>
+            <button
+              v-if="openBooks.length === 0"
+              type="button"
+              class="btn-add-open-book"
+              @click="addOpenBook"
+            >
+              + Add a wild card
+            </button>
+            <button
+              v-else-if="openBooks.length < 3"
+              type="button"
+              class="btn-add-open-book"
+              @click="addOpenBook"
+            >
+              + Another one
+            </button>
+          </div>
 
           <!-- Name field folded into books step -->
           <div class="name-field-inline">
@@ -146,14 +181,12 @@
       <!-- Navigation -->
       <div class="form-nav">
         <button
-          v-if="formStep > 0"
           type="button"
           class="btn-back"
           @click="goBack"
         >
           Back
         </button>
-        <span v-else></span>
 
         <button
           v-if="formStep < formSteps.length - 1"
@@ -230,6 +263,7 @@ watch(() => step.value, async (newStep) => {
 const readerName = ref('')
 const makeBook = () => ({ title: '' })
 const books = ref([makeBook(), makeBook(), makeBook()])
+const openBooks = ref([])
 
 // Forces state
 const generatedForces = ref([])
@@ -258,7 +292,7 @@ function startPlaceholderCycle() {
   spellBreakPlaceholderIndex.value = 0
   placeholderInterval = setInterval(() => {
     spellBreakPlaceholderIndex.value = (spellBreakPlaceholderIndex.value + 1) % spellBreakPlaceholders.length
-  }, 3000)
+  }, 5500)
 }
 
 function stopPlaceholderCycle() {
@@ -311,7 +345,7 @@ const bookPlaceholders = [
   'One that felt written for you',
   'One you press into other people\'s hands',
   'A book you return to in your head',
-  'One that rearranged something',
+  'One that made the world look different after',
   'The one nobody else seems to know',
   'A book that still isn\'t finished with you',
 ]
@@ -326,6 +360,23 @@ function addBook() {
     nextTick(() => {
       document.getElementById('book-' + (books.value.length - 1))?.focus()
     })
+  }
+}
+
+function addOpenBook() {
+  if (openBooks.value.length < 3) {
+    openBooks.value.push(makeBook())
+    nextTick(() => {
+      document.getElementById('open-book-' + (openBooks.value.length - 1))?.focus()
+    })
+  }
+}
+
+function handleOpenBookEnter(j) {
+  if (openBooks.value[j].title.trim() && openBooks.value.length < 3) {
+    addOpenBook()
+  } else if (canAdvance.value) {
+    advanceStep()
   }
 }
 
@@ -348,7 +399,10 @@ function toggleForce(phrase) {
 }
 
 // Per-step validation
-const filledBookCount = computed(() => books.value.filter(b => b.title.trim()).length)
+const filledBookCount = computed(() =>
+  books.value.filter(b => b.title.trim()).length +
+  openBooks.value.filter(b => b.title.trim()).length
+)
 
 const canAdvance = computed(() => {
   switch (formStep.value) {
@@ -363,13 +417,19 @@ const canSubmit = computed(() => {
   return filledBookCount.value >= 3 && selectedForces.value.length > 0 && !!spellBreak.value.trim()
 })
 
+function allFilledBooks() {
+  return [
+    ...books.value.filter(b => b.title.trim()),
+    ...openBooks.value.filter(b => b.title.trim()),
+  ]
+}
+
 async function fetchForces() {
   forcesLoading.value = true
   forcesError.value = ''
 
   try {
-    const titles = books.value
-      .filter(b => b.title.trim())
+    const titles = allFilledBooks()
       .map(b => b.title.trim())
 
     const response = await $fetch('/api/generate-forces', {
@@ -411,8 +471,17 @@ async function advanceStep() {
 
 function goBack() {
   if (formStep.value > 0) {
+    // If going back from forces to books, clear forces so they regenerate
+    // with any book changes when the user advances again
+    if (formSteps[formStep.value] === 'forces') {
+      generatedForces.value = []
+      selectedForces.value = []
+    }
     transitionDir.value = 'back'
     formStep.value--
+  } else {
+    // From step 0, go back to intro
+    step.value = 'intro'
   }
 }
 
@@ -432,6 +501,7 @@ function resetEverything() {
   error.value = ''
   readerName.value = ''
   books.value = [makeBook(), makeBook(), makeBook()]
+  openBooks.value = []
   generatedForces.value = []
   selectedForces.value = []
   spellBreak.value = ''
@@ -452,8 +522,7 @@ async function submitReading() {
   }, 4200)
 
   try {
-    const filledBooks = books.value
-      .filter(b => b.title.trim())
+    const filledBooks = allFilledBooks()
       .map(b => ({ title: b.title.trim() }))
 
     const payload = {
@@ -523,9 +592,9 @@ async function submitReading() {
   line-height: 1.15;
 }
 .intro-sub {
-  font-size: 19px;
+  font-size: 1.2rem;
   color: var(--text-secondary);
-  line-height: 1.8;
+  line-height: 1.7;
   font-weight: 300;
   margin-bottom: 44px;
 }
@@ -554,7 +623,7 @@ async function submitReading() {
   border-radius: 4px;
   padding: 16px 56px;
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 1rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   font-family: var(--font-system);
@@ -567,7 +636,7 @@ async function submitReading() {
 }
 .intro-note {
   margin-top: 20px;
-  font-size: 13px;
+  font-size: 0.9rem;
   color: var(--text-muted);
   letter-spacing: 0.1em;
 }
@@ -592,7 +661,7 @@ async function submitReading() {
   outline-offset: 2px;
 }
 .error-message p {
-  font-size: 14px;
+  font-size: 1rem;
   color: var(--text-secondary);
   font-weight: 300;
   line-height: 1.5;
@@ -603,14 +672,14 @@ async function submitReading() {
   min-height: 200px;
 }
 .form-section h2 {
-  font-size: 26px;
+  font-size: 1.6rem;
   font-weight: 400;
   color: var(--text-primary);
   letter-spacing: 0.04em;
   margin-bottom: 10px;
 }
 .section-desc {
-  font-size: 17px;
+  font-size: 1.1rem;
   color: var(--text-secondary);
   font-weight: 300;
   line-height: 1.7;
@@ -635,7 +704,7 @@ async function submitReading() {
   gap: 12px;
 }
 .book-num {
-  font-size: 11px;
+  font-size: 0.8rem;
   color: var(--text-muted);
   font-family: var(--font-system);
   min-width: 16px;
@@ -647,7 +716,7 @@ async function submitReading() {
   border: none;
   border-bottom: 1px solid var(--border-light);
   padding: 12px 0;
-  font-size: 18px;
+  font-size: 1.1rem;
   color: var(--text-primary);
   font-weight: 300;
   outline: none;
@@ -656,7 +725,7 @@ async function submitReading() {
 .book-input::placeholder {
   color: var(--text-muted);
   font-style: italic;
-  font-size: 16px;
+  font-size: 1rem;
 }
 .book-input:focus {
   border-color: var(--accent);
@@ -667,7 +736,7 @@ async function submitReading() {
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 0.9rem;
   font-style: italic;
   cursor: pointer;
   padding: 12px 0;
@@ -679,7 +748,38 @@ async function submitReading() {
 }
 .book-count-hint {
   opacity: 0.6;
-  font-size: 12px;
+  font-size: 0.8rem;
+}
+
+/* Open-ended book entries */
+.open-books-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.open-books-label {
+  font-size: 1rem;
+  color: var(--text-muted);
+  font-style: italic;
+  font-weight: 300;
+  margin-bottom: 12px;
+}
+.open-book-num {
+  color: var(--accent);
+  opacity: 0.5;
+}
+.btn-add-open-book {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-style: italic;
+  cursor: pointer;
+  padding: 10px 0;
+  transition: color 0.2s ease;
+}
+.btn-add-open-book:hover {
+  color: var(--text-secondary);
 }
 
 /* Name field (inline at bottom of books step) */
@@ -706,7 +806,7 @@ async function submitReading() {
   animation: pulse 2.5s ease-in-out infinite;
 }
 .forces-loading-text {
-  font-size: 16px;
+  font-size: 1rem;
   color: var(--text-secondary);
   font-weight: 300;
   font-style: italic;
@@ -727,12 +827,12 @@ async function submitReading() {
   padding: 10px 22px;
   color: var(--text-secondary);
   font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
-  font-size: 17px;
+  font-size: 1.05rem;
   font-weight: 400;
   font-style: italic;
   cursor: pointer;
   transition: all 0.25s ease;
-  line-height: 1.3;
+  line-height: 1.4;
 }
 .force-phrase:hover {
   border-color: var(--border-light);
@@ -750,7 +850,7 @@ async function submitReading() {
   padding: 40px 0;
 }
 .forces-error p {
-  font-size: 14px;
+  font-size: 1rem;
   color: var(--text-secondary);
   font-weight: 300;
   margin-bottom: 16px;
@@ -761,7 +861,7 @@ async function submitReading() {
   border-radius: 4px;
   padding: 10px 24px;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 0.9rem;
   letter-spacing: 0.1em;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -813,7 +913,7 @@ async function submitReading() {
   border-radius: 6px;
   padding: 22px 64px;
   color: var(--text-muted);
-  font-size: 16px;
+  font-size: 1rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   font-family: var(--font-body, 'Source Serif 4', 'Georgia', serif);
@@ -924,7 +1024,7 @@ async function submitReading() {
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 0.9rem;
   font-style: italic;
   cursor: pointer;
   padding: 10px 16px;
@@ -940,7 +1040,7 @@ async function submitReading() {
   border-radius: 4px;
   padding: 12px 36px;
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 1rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   font-family: var(--font-system);
@@ -963,7 +1063,7 @@ async function submitReading() {
   margin-top: 12px;
 }
 .step-hint {
-  font-size: 14px;
+  font-size: 0.9rem;
   color: var(--text-muted);
   font-style: italic;
 }
@@ -1057,7 +1157,7 @@ async function submitReading() {
 }
 
 .loading-text {
-  font-size: 16px;
+  font-size: 1.05rem;
   color: var(--text-secondary);
   font-weight: 300;
   font-style: italic;
@@ -1093,7 +1193,7 @@ async function submitReading() {
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 0.9rem;
   font-style: italic;
   letter-spacing: 0.08em;
   cursor: pointer;
@@ -1110,6 +1210,7 @@ async function submitReading() {
 .btn-continue:focus-visible,
 .btn-back:focus-visible,
 .btn-add-book:focus-visible,
+.btn-add-open-book:focus-visible,
 .btn-retry:focus-visible,
 .btn-reset:focus-visible,
 .force-phrase:focus-visible,
